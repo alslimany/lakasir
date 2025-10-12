@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -119,7 +120,7 @@ class SellingResource extends Resource
                 SelectFilter::make('payment_method_id')
                     ->label(__('Payment Method'))
                     ->relationship('paymentMethod', 'name'),
-                Tables\Filters\TernaryFilter::make('is_paid')
+                TernaryFilter::make('is_paid')
                     ->label(__('Payment Status'))
                     ->placeholder(__('All'))
                     ->trueLabel(__('Paid off'))
