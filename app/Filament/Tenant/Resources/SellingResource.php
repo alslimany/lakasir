@@ -63,6 +63,11 @@ class SellingResource extends Resource
                     ->translateLabel()
                     ->sortable()
                     ->money(Setting::get('currency', 'IDR')),
+                TextColumn::make('is_paid')
+                    ->label(__('Payment Status'))
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state): string => $state ? __('Paid off') : __('Unpaid'))
+                    ->color(fn (bool $state): string => $state ? 'success' : 'warning'),
                 TextColumn::make('total_price')
                     ->translateLabel()
                     ->sortable()
@@ -90,6 +95,18 @@ class SellingResource extends Resource
                         $record->sellingDetails()->delete();
                     }),
             ])
+            ->bulkActions([
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make()
+                        ->visible(can('can delete selling'))
+                        ->requiresConfirmation()
+                        ->before(function ($records) {
+                            foreach ($records as $record) {
+                                $record->sellingDetails()->delete();
+                            }
+                        }),
+                ]),
+            ])
             ->searchPlaceholder('Search (Code, User, Customer Number')
             ->header(view('filament.tenant.resources.sellings.headers.overview', [
                 'start_date' => request()->input('tableFilters.date.start_date'),
@@ -99,6 +116,14 @@ class SellingResource extends Resource
                 SelectFilter::make('user_id')
                     ->label(__('Cashier'))
                     ->options(User::all()->mapWithKeys(fn (User $user) => [$user->id => $user->cashier_name])),
+                SelectFilter::make('payment_method_id')
+                    ->label(__('Payment Method'))
+                    ->relationship('paymentMethod', 'name'),
+                Tables\Filters\TernaryFilter::make('is_paid')
+                    ->label(__('Payment Status'))
+                    ->placeholder(__('All'))
+                    ->trueLabel(__('Paid off'))
+                    ->falseLabel(__('Unpaid')),
                 Filter::make('date')
                     ->form([
                         DatePicker::make('start_date')
