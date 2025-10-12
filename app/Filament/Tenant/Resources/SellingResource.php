@@ -87,9 +87,9 @@ class SellingResource extends Resource
             ->actions([
                 \Filament\Tables\Actions\ViewAction::make(),
                 \Filament\Tables\Actions\EditAction::make()
-                    ->visible(can('can edit selling')),
+                    ->visible(can('update selling')),
                 \Filament\Tables\Actions\DeleteAction::make()
-                    ->visible(can('can delete selling'))
+                    ->visible(can('delete selling'))
                     ->requiresConfirmation()
                     ->before(function (Selling $record) {
                         // Delete all selling details first
@@ -99,7 +99,7 @@ class SellingResource extends Resource
             ->bulkActions([
                 \Filament\Tables\Actions\BulkActionGroup::make([
                     \Filament\Tables\Actions\DeleteBulkAction::make()
-                        ->visible(can('can delete selling'))
+                        ->visible(can('delete selling'))
                         ->requiresConfirmation()
                         ->before(function ($records) {
                             foreach ($records as $record) {
