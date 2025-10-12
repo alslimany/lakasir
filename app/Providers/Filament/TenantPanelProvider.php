@@ -25,6 +25,7 @@ use App\Filament\Tenant\Pages\Report;
 use App\Filament\Tenant\Pages\SellingReport;
 use App\Filament\Tenant\Pages\TenantLogin;
 use App\Filament\Tenant\Resources\CategoryResource;
+use App\Filament\Tenant\Resources\CurrencyResource;
 use App\Filament\Tenant\Resources\MemberResource;
 use App\Filament\Tenant\Resources\PaymentMethodResource;
 use App\Filament\Tenant\Resources\PermissionResource;
@@ -231,6 +232,7 @@ class TenantPanelProvider extends PanelProvider
             ]),
             NavigationGroup::make(__('Setting'))->collapsible(false)->items([
                 $this->generateNavigationItem(GeneralSetting::class),
+                $this->generateNavigationItem(CurrencyResource::class),
                 $this->generateNavigationItem(Printer::class),
             ]),
         ];
