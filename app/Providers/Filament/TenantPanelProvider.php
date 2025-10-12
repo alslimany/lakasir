@@ -105,6 +105,29 @@ class TenantPanelProvider extends PanelProvider
             fn () => view('version-indicator')
         );
 
+        // Add RTL support for Arabic and other RTL languages
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            function () {
+                $direction = config('app.direction', 'ltr');
+                if ($direction === 'rtl') {
+                    return view('filament.rtl-styles');
+                }
+                return '';
+            }
+        );
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_START,
+            function () {
+                $direction = config('app.direction', 'ltr');
+                if ($direction === 'rtl') {
+                    return '<div style="direction: rtl;">';
+                }
+                return '';
+            }
+        );
+
         if (app()->environment('demo')) {
             $arraySupport = [
                 'https://saweria.co/sheenazien',

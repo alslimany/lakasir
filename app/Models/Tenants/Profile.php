@@ -63,6 +63,7 @@ class Profile extends Model
                 ->label(__('Language'))
                 ->selectablePlaceholder(false)
                 ->options([
+                    'ar' => 'العربية',
                     'id' => 'Bahasa Indonesia',
                     'en' => 'English',
                     'es' => 'Español',

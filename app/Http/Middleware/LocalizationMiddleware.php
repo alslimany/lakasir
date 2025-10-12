@@ -27,6 +27,10 @@ class LocalizationMiddleware
         config(['app.locale' => $locale]);
         app()->setLocale($locale);
 
+        // Set RTL direction for Arabic
+        $rtlLocales = ['ar'];
+        config(['app.direction' => in_array($locale, $rtlLocales) ? 'rtl' : 'ltr']);
+
         return $next($request);
     }
 }
