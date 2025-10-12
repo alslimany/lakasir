@@ -106,12 +106,13 @@ class GeneralSetting extends Page implements HasActions, HasForms
                         ->translateLabel()
                         ->schema([
                             Select::make('currency')
-                                ->options([
-                                    'IDR' => 'IDR',
-                                    'MXN' => 'MXN',
-                                    'USD' => 'USD',
-                                ])
-                                ->translateLabel(),
+                                ->options(function () {
+                                    return \App\Models\Tenants\Currency::active()
+                                        ->pluck('name', 'code')
+                                        ->toArray();
+                                })
+                                ->translateLabel()
+                                ->helperText(__('Manage currencies in Settings > Currencies')),
                             Select::make('minimum_stock_nofication')
                                 ->options([
                                     0 => 0,

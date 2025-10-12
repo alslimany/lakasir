@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -63,6 +64,11 @@ class SellingResource extends Resource
                     ->translateLabel()
                     ->sortable()
                     ->money(Setting::get('currency', 'IDR')),
+                TextColumn::make('is_paid')
+                    ->label(__('Payment Status'))
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state): string => $state ? __('Paid off') : __('Unpaid'))
+                    ->color(fn (bool $state): string => $state ? 'success' : 'warning'),
                 TextColumn::make('total_price')
                     ->translateLabel()
                     ->sortable()
@@ -78,6 +84,30 @@ class SellingResource extends Resource
                     ->visible(feature(ProductInitialPrice::class))
                     ->money(Setting::get('currency', 'IDR')),
             ])
+            ->actions([
+                \Filament\Tables\Actions\ViewAction::make(),
+                \Filament\Tables\Actions\EditAction::make()
+                    ->visible(can('update selling')),
+                \Filament\Tables\Actions\DeleteAction::make()
+                    ->visible(can('delete selling'))
+                    ->requiresConfirmation()
+                    ->before(function (Selling $record) {
+                        // Delete all selling details first
+                        $record->sellingDetails()->delete();
+                    }),
+            ])
+            ->bulkActions([
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make()
+                        ->visible(can('delete selling'))
+                        ->requiresConfirmation()
+                        ->before(function ($records) {
+                            foreach ($records as $record) {
+                                $record->sellingDetails()->delete();
+                            }
+                        }),
+                ]),
+            ])
             ->searchPlaceholder('Search (Code, User, Customer Number')
             ->header(view('filament.tenant.resources.sellings.headers.overview', [
                 'start_date' => request()->input('tableFilters.date.start_date'),
@@ -87,6 +117,14 @@ class SellingResource extends Resource
                 SelectFilter::make('user_id')
                     ->label(__('Cashier'))
                     ->options(User::all()->mapWithKeys(fn (User $user) => [$user->id => $user->cashier_name])),
+                SelectFilter::make('payment_method_id')
+                    ->label(__('Payment Method'))
+                    ->relationship('paymentMethod', 'name'),
+                TernaryFilter::make('is_paid')
+                    ->label(__('Payment Status'))
+                    ->placeholder(__('All'))
+                    ->trueLabel(__('Paid off'))
+                    ->falseLabel(__('Unpaid')),
                 Filter::make('date')
                     ->form([
                         DatePicker::make('start_date')
@@ -132,6 +170,7 @@ class SellingResource extends Resource
         return [
             'index' => Pages\ListSellings::route('/'),
             'view' => Pages\ViewSelling::route('/{record}'),
+            'edit' => Pages\EditSelling::route('/{record}/edit'),
         ];
     }
 }
