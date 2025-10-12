@@ -12,23 +12,34 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $products = DB::table('products')->whereNotNull('barcode')->get();
+        // Check if the barcode column exists before trying to migrate data
+        if (Schema::hasColumn('products', 'barcode')) {
+            $products = DB::table('products')->whereNotNull('barcode')->get();
 
-        foreach ($products as $product) {
-            DB::table('barcodes')->insert([
-                'product_id' => $product->id,
-                'code' => $product->barcode,
-                'type' => 'primary',
-                'description' => __('Migrated from original barcode'),
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            foreach ($products as $product) {
+                // Check if barcode already exists to avoid duplicates
+                $exists = DB::table('barcodes')
+                    ->where('product_id', $product->id)
+                    ->where('code', $product->barcode)
+                    ->exists();
+                
+                if (!$exists) {
+                    DB::table('barcodes')->insert([
+                        'product_id' => $product->id,
+                        'code' => $product->barcode,
+                        'type' => 'primary',
+                        'description' => __('Migrated from original barcode'),
+                        'is_active' => true,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            Schema::table('products', function (Blueprint $table) {
+                $table->dropColumn('barcode');
+            });
         }
-
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('barcode');
-        });
     }
 
     /**

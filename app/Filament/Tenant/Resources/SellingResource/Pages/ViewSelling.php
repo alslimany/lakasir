@@ -46,6 +46,18 @@ class ViewSelling extends ViewRecord
                     'id' => 'printButton',
                 ])
                 ->visible(can('can print selling')),
+            \Filament\Actions\EditAction::make()
+                ->visible(can('can edit selling'))
+                ->icon('heroicon-o-pencil'),
+            \Filament\Actions\DeleteAction::make()
+                ->visible(can('can delete selling'))
+                ->requiresConfirmation()
+                ->modalHeading(__('Delete Selling'))
+                ->modalDescription(__('Are you sure you want to delete this selling record? This action cannot be undone.'))
+                ->before(function (Selling $record) {
+                    // Delete all selling details first
+                    $record->sellingDetails()->delete();
+                }),
         ];
     }
 

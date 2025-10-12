@@ -78,6 +78,18 @@ class SellingResource extends Resource
                     ->visible(feature(ProductInitialPrice::class))
                     ->money(Setting::get('currency', 'IDR')),
             ])
+            ->actions([
+                \Filament\Tables\Actions\ViewAction::make(),
+                \Filament\Tables\Actions\EditAction::make()
+                    ->visible(can('can edit selling')),
+                \Filament\Tables\Actions\DeleteAction::make()
+                    ->visible(can('can delete selling'))
+                    ->requiresConfirmation()
+                    ->before(function (Selling $record) {
+                        // Delete all selling details first
+                        $record->sellingDetails()->delete();
+                    }),
+            ])
             ->searchPlaceholder('Search (Code, User, Customer Number')
             ->header(view('filament.tenant.resources.sellings.headers.overview', [
                 'start_date' => request()->input('tableFilters.date.start_date'),
@@ -132,6 +144,7 @@ class SellingResource extends Resource
         return [
             'index' => Pages\ListSellings::route('/'),
             'view' => Pages\ViewSelling::route('/{record}'),
+            'edit' => Pages\EditSelling::route('/{record}/edit'),
         ];
     }
 }
