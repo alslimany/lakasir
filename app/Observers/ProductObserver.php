@@ -94,5 +94,30 @@ class ProductObserver extends AbstractObserver implements DataAwareRule
             'expired' => $this->data['expired'] ?? null,
             'is_ready' => true,
         ]);
+
+        // Update tenant usage
+        $this->updateUsageCount();
+    }
+
+    public function deleted(Product $product): void
+    {
+        $this->updateUsageCount();
+    }
+
+    /**
+     * Update tenant usage count.
+     */
+    protected function updateUsageCount(): void
+    {
+        $tenant = tenancy()->tenant;
+        
+        if (!$tenant || !$tenant->usage) {
+            return;
+        }
+
+        $tenant->usage->update([
+            'product_count' => Product::count(),
+            'last_calculated_at' => now(),
+        ]);
     }
 }
