@@ -25,6 +25,8 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            ->authGuard('admin')
+            ->login()
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -51,7 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->brandName('Lakasir Admin')
+            ->brandName('كاشير Admin')
             ->favicon(asset('images/favicon.png'));
     }
 }

@@ -1,7 +1,7 @@
 # Admin Panel Setup for Production
 
 ## Overview
-The admin panel is now accessible on the central domain at `/admin` path instead of requiring a separate subdomain.
+The admin panel is accessible on the central domain at `/admin` path using a separate admin authentication system.
 
 ## Access URL
 - **Production**: `https://kashir.ly/admin`
@@ -18,14 +18,55 @@ APP_CENTRAL_DOMAIN=kashir.ly
 APP_URL=https://kashir.ly
 ```
 
-### 2. Configure DNS
+### 2. Run Migrations
+
+Make sure the `admins` table is created:
+
+```bash
+php artisan migrate
+```
+
+### 3. Create Admin User
+
+Run the admin seeder to create the default admin account:
+
+```bash
+php artisan db:seed --class=AdminSeeder
+```
+
+**Default Admin Credentials:**
+- **Email**: `admin@kashir.ly`
+- **Password**: `password`
+
+**⚠️ IMPORTANT**: Change the admin password immediately after first login!
+
+### 4. Clear Cache
+
+After configuration, clear the application cache:
+
+```bash
+php artisan config:clear
+php artisan route:clear
+php artisan cache:clear
+```
+
+## Authentication
+
+The admin panel uses a separate authentication system:
+- **Guard**: `admin`
+- **Model**: `App\Models\Admin`
+- **Database Table**: `admins`
+
+This is separate from tenant users, providing secure super admin access to manage all tenants.
+
+### 5. Configure DNS
 
 Make sure your DNS has an A record pointing to your server:
 ```
 kashir.ly  →  Your Server IP
 ```
 
-### 3. Configure Web Server
+### 6. Configure Web Server
 
 #### Nginx Configuration
 
