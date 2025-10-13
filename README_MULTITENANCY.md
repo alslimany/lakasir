@@ -104,7 +104,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Configure domains
 APP_CENTRAL_DOMAIN=lakasir.test
-APP_ADMIN_DOMAIN=admin.lakasir.test
+APP_ADMIN_DOMAIN=lakasir.test/admin
 ```
 
 ### 5. Set Up Stripe
@@ -125,7 +125,7 @@ UPDATE subscription_plans SET stripe_price_id = 'price_xxxxx' WHERE slug = 'ente
 
 ### 6. Access the Application
 
-- **Admin Panel**: `https://admin.yourdomain.com/admin`
+- **Admin Panel**: `https://yourdomain.com/admin`
 - **Tenant Registration**: `https://yourdomain.com/auth/register`
 - **Tenant Domain**: `https://tenant1.yourdomain.com`
 
@@ -211,7 +211,7 @@ CASHIER_CURRENCY_LOCALE=en
 
 # Tenancy
 APP_CENTRAL_DOMAIN=lakasir.test
-APP_ADMIN_DOMAIN=admin.lakasir.test
+APP_ADMIN_DOMAIN=lakasir.test/admin
 
 # Database
 DB_CONNECTION=mysql

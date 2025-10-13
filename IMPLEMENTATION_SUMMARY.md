@@ -54,7 +54,7 @@ Added:
 - Manage subscription plans
 - Dashboard with key metrics (total tenants, active, on trial)
 
-Access: `https://admin.yourdomain.com/admin`
+Access: `https://yourdomain.com/admin`
 
 ### 4. Tenant Panel Enhancements ✅
 

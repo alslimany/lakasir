@@ -44,7 +44,7 @@ Three subscription plans are available:
 ### 3. Tenant Management
 
 #### Admin Panel
-Access the admin panel at: `https://admin.yourdomain.com/admin`
+Access the admin panel at: `https://yourdomain.com/admin`
 
 Features:
 - View all tenants
@@ -135,7 +135,7 @@ CASHIER_CURRENCY_LOCALE=en
 
 # Tenancy Configuration
 APP_CENTRAL_DOMAIN=lakasir.test
-APP_ADMIN_DOMAIN=admin.lakasir.test
+APP_ADMIN_DOMAIN=lakasir.test/admin
 ```
 
 ### 2. Database Migration

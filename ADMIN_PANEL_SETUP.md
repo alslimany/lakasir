@@ -1,46 +1,40 @@
 # Admin Panel Setup for Production
 
-## Issue
-When deploying to production, the admin panel at `https://admin.domain.com/admin` returns a 404 error.
+## Overview
+The admin panel is now accessible on the central domain at `/admin` path instead of requiring a separate subdomain.
 
-## Root Cause
-The admin panel needs proper domain configuration in production to work correctly. Filament panels need to know which domains they should respond to.
+## Access URL
+- **Production**: `https://kashir.ly/admin`
+- **Local Development**: `http://localhost/admin`
 
-## Solution
+## Configuration
 
 ### 1. Configure Environment Variables
 
-In your production `.env` file, set either:
+In your production `.env` file, set your central domain:
 
-**Option A: Set APP_ADMIN_DOMAIN directly**
-```env
-APP_ADMIN_DOMAIN=admin.kashir.ly
-APP_CENTRAL_DOMAIN=kashir.ly
-```
-
-**Option B: Set only APP_CENTRAL_DOMAIN (admin domain will be auto-constructed)**
 ```env
 APP_CENTRAL_DOMAIN=kashir.ly
-# Admin domain will automatically be: admin.kashir.ly
+APP_URL=https://kashir.ly
 ```
 
 ### 2. Configure DNS
 
-Make sure your DNS has an A record or CNAME pointing to your server:
+Make sure your DNS has an A record pointing to your server:
 ```
-admin.kashir.ly  →  Your Server IP
+kashir.ly  →  Your Server IP
 ```
 
 ### 3. Configure Web Server
 
 #### Nginx Configuration
 
-Add a server block for the admin domain:
+Your existing Nginx configuration for the central domain will handle admin routes:
 
 ```nginx
 server {
     listen 80;
-    server_name admin.kashir.ly;
+    server_name kashir.ly;
     root /var/www/lakasir/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
@@ -73,16 +67,16 @@ server {
 
 Then enable SSL with Let's Encrypt:
 ```bash
-sudo certbot --nginx -d admin.kashir.ly
+sudo certbot --nginx -d kashir.ly
 ```
 
 #### Apache Configuration
 
-Add a virtual host for the admin domain:
+Your existing Apache configuration for the central domain will handle admin routes:
 
 ```apache
 <VirtualHost *:80>
-    ServerName admin.kashir.ly
+    ServerName kashir.ly
     DocumentRoot /var/www/lakasir/public
 
     <Directory /var/www/lakasir/public>
@@ -90,14 +84,14 @@ Add a virtual host for the admin domain:
         Require all granted
     </Directory>
 
-    ErrorLog ${APACHE_LOG_DIR}/admin.kashir.ly-error.log
-    CustomLog ${APACHE_LOG_DIR}/admin.kashir.ly-access.log combined
+    ErrorLog ${APACHE_LOG_DIR}/kashir.ly-error.log
+    CustomLog ${APACHE_LOG_DIR}/kashir.ly-access.log combined
 </VirtualHost>
 ```
 
 Then enable SSL with Let's Encrypt:
 ```bash
-sudo certbot --apache -d admin.kashir.ly
+sudo certbot --apache -d kashir.ly
 ```
 
 ### 4. Clear Cache
@@ -122,12 +116,12 @@ You should see Filament admin routes listed.
 
 ## How It Works
 
-The `AdminPanelProvider` now automatically:
+The admin panel is now configured to be accessible on the central domain:
 
-1. Checks for `APP_ADMIN_DOMAIN` environment variable
-2. If not set, constructs admin domain from `APP_CENTRAL_DOMAIN`
-3. Configures Filament panel to respond to that domain
-4. Skips domain configuration for local development
+1. Admin panel routes are available at `/admin` path
+2. The `InitializeTenancyByDomain` middleware skips tenancy initialization for `/admin` routes
+3. No separate subdomain configuration needed
+4. Works the same in local development and production
 
 ## Local Development
 
@@ -138,34 +132,36 @@ For local development, the admin panel works without domain configuration:
 ## Production Access
 
 After proper configuration:
-- Admin Panel: `https://admin.kashir.ly/admin`
+- Admin Panel: `https://kashir.ly/admin`
 - Tenant Registration: `https://kashir.ly/auth/register`
 - Tenant Domains: `https://tenant1.kashir.ly`
 
 ## Troubleshooting
 
-### 404 Error on Admin Domain
+### 404 Error on Admin Panel
 
-1. **Check DNS**: Ensure `admin.kashir.ly` resolves to your server IP
-   ```bash
-   dig admin.kashir.ly
-   # or
-   nslookup admin.kashir.ly
-   ```
-
-2. **Check Environment Variables**:
+1. **Check Environment Variables**:
    ```bash
    php artisan tinker
-   >>> env('APP_ADMIN_DOMAIN')
    >>> env('APP_CENTRAL_DOMAIN')
-   >>> config('tenancy.admin_domains')
+   >>> config('tenancy.central_domains')
    ```
 
-3. **Check Web Server**: Ensure virtual host is configured and enabled
+2. **Check Routes**:
+   ```bash
+   php artisan route:list --path=admin
+   ```
 
-4. **Check Filament Panel**:
+3. **Check Filament Panel**:
    ```bash
    php artisan filament:list-panels
+   ```
+
+4. **Clear Cache**:
+   ```bash
+   php artisan config:clear
+   php artisan route:clear
+   php artisan cache:clear
    ```
 
 ### Redirect Loop
