@@ -22,7 +22,7 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        $panel = $panel
             ->id('admin')
             ->path('admin')
             ->colors([
@@ -53,5 +53,21 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->brandName('Lakasir Admin')
             ->favicon(asset('images/favicon.png'));
+
+        // Configure domain for production
+        // Check if we have a dedicated admin domain configured
+        $adminDomain = env('APP_ADMIN_DOMAIN');
+        
+        // If not, construct it from central domain
+        if (!$adminDomain && env('APP_CENTRAL_DOMAIN')) {
+            $adminDomain = 'admin.' . env('APP_CENTRAL_DOMAIN');
+        }
+        
+        // Only set domain if we're not in local development
+        if ($adminDomain && !in_array($adminDomain, ['localhost', 'admin.localhost', null])) {
+            $panel->domain($adminDomain);
+        }
+
+        return $panel;
     }
 }
