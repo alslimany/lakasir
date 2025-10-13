@@ -2,6 +2,11 @@
 
 namespace App;
 
+use App\Models\SubscriptionPlan;
+use App\Models\TenantUsage;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Cashier\Billable;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
@@ -22,9 +27,127 @@ use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
  */
 class Tenant extends BaseTenant implements TenantWithDatabase
 {
-    use HasDatabase, HasDomains;
+    use Billable, HasDatabase, HasDomains;
 
     protected $hidden = [
         'tenancy_db_profile_password',
     ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'trial_ends_at' => 'datetime',
+    ];
+
+    /**
+     * Get the subscription plan for this tenant.
+     */
+    public function subscriptionPlan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class);
+    }
+
+    /**
+     * Get the usage statistics for this tenant.
+     */
+    public function usage(): HasOne
+    {
+        return $this->hasOne(TenantUsage::class);
+    }
+
+    /**
+     * Check if tenant is on trial.
+     */
+    public function onTrial(): bool
+    {
+        return $this->trial_ends_at && $this->trial_ends_at->isFuture();
+    }
+
+    /**
+     * Check if tenant has active subscription or trial.
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->is_active && ($this->onTrial() || $this->subscribed('default'));
+    }
+
+    /**
+     * Check if tenant can use feature.
+     */
+    public function canUseFeature(string $feature): bool
+    {
+        if (!$this->hasActiveSubscription()) {
+            return false;
+        }
+
+        if ($this->onTrial()) {
+            return true;
+        }
+
+        $plan = $this->subscriptionPlan;
+        if (!$plan) {
+            return false;
+        }
+
+        return $plan->hasUnlimitedFeature($feature);
+    }
+
+    /**
+     * Check if tenant has reached feature limit.
+     */
+    public function hasReachedLimit(string $feature): bool
+    {
+        if (!$this->hasActiveSubscription()) {
+            return true;
+        }
+
+        if ($this->onTrial()) {
+            return false;
+        }
+
+        $plan = $this->subscriptionPlan;
+        if (!$plan || $plan->hasUnlimitedFeature($feature)) {
+            return false;
+        }
+
+        $limit = $plan->getFeatureLimit($feature);
+        $usage = $this->usage;
+
+        if (!$usage || !$limit) {
+            return false;
+        }
+
+        return match($feature) {
+            'products' => $usage->product_count >= $limit,
+            'users' => $usage->user_count >= $limit,
+            default => false,
+        };
+    }
+
+    /**
+     * Get remaining feature count.
+     */
+    public function getRemainingFeatureCount(string $feature): ?int
+    {
+        $plan = $this->subscriptionPlan;
+        if (!$plan) {
+            return null;
+        }
+
+        if ($plan->hasUnlimitedFeature($feature)) {
+            return -1; // Unlimited
+        }
+
+        $limit = $plan->getFeatureLimit($feature);
+        $usage = $this->usage;
+
+        if (!$usage || !$limit) {
+            return null;
+        }
+
+        return max(0, $limit - match($feature) {
+            'products' => $usage->product_count,
+            'users' => $usage->user_count,
+            default => 0,
+        });
+    }
 }

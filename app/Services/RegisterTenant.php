@@ -19,10 +19,19 @@ class RegisterTenant
             'id' => $name,
             'tenancy_db_name' => 'lakasir_'.$name,
             'tenancy_email' => $data['email'],
+            'is_active' => true,
+            'trial_ends_at' => now()->addDays(14), // 14-day trial
         ]);
 
         $tenant->domains()->create([
             'domain' => $data['domain'],
+        ]);
+
+        // Create usage tracking record
+        $tenant->usage()->create([
+            'product_count' => 0,
+            'user_count' => 0,
+            'storage_used' => 0,
         ]);
 
         $tenant->run(function () use ($data) {

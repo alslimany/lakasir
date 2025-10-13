@@ -43,6 +43,11 @@ class InitializeTenancyByDomain extends IdentificationMiddleware
     public function initializeTenancy($request, $next, ...$resolverArguments)
     {
         try {
+            // Skip tenancy initialization for admin panel routes
+            if ($request->is('admin') || $request->is('admin/*')) {
+                return $next($request);
+            }
+
             if (! in_array($request->getHost(), config('tenancy.admin_domains'))) {
                 if (config('tenancy.central_domains')[0]) {
                     if (! in_array($request->getHost(), config('tenancy.central_domains'))) {

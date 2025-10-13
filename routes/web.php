@@ -16,6 +16,10 @@ Route::get('/serviceworker.js', function () {
 Route::get('/auth/register', RegisterTenantForm::class)
     ->name('auth.register');
 
+// Stripe webhook
+Route::post('/stripe/webhook', [App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])
+    ->name('cashier.webhook');
+
 Route::middleware([
     'web',
 ])
