@@ -14,13 +14,16 @@ class Billing extends Page
 
     protected static string $view = 'filament.tenant.pages.billing';
 
-    protected static ?string $navigationGroup = 'Settings';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Settings');
+    }
 
     protected static ?int $navigationSort = 100;
 
     public function getHeading(): string
     {
-        return 'Billing & Subscription';
+        return __('Billing & Subscription');
     }
 
     protected function getHeaderActions(): array
@@ -31,12 +34,12 @@ class Billing extends Page
         if (!$tenant || $tenant->onTrial() || !$tenant->hasActiveSubscription()) {
             return [
                 Action::make('choosePlan')
-                    ->label('Choose Plan')
+                    ->label(__('Choose Plan'))
                     ->icon('heroicon-o-sparkles')
                     ->color('primary')
                     ->form([
                         Select::make('plan')
-                            ->label('Select Plan')
+                            ->label(__('Select Plan'))
                             ->options(SubscriptionPlan::active()->pluck('name', 'id'))
                             ->required()
                             ->reactive(),
@@ -45,7 +48,7 @@ class Billing extends Page
                         $plan = SubscriptionPlan::find($data['plan']);
                         if (!$plan) {
                             Notification::make()
-                                ->title('Plan not found')
+                                ->title(__('Plan not found'))
                                 ->danger()
                                 ->send();
                             return;
@@ -53,8 +56,8 @@ class Billing extends Page
 
                         // In production, this would redirect to Stripe Checkout
                         Notification::make()
-                            ->title('Redirecting to payment...')
-                            ->body('You will be redirected to Stripe to complete your subscription.')
+                            ->title(__('Redirecting to payment...'))
+                            ->body(__('You will be redirected to Stripe to complete your subscription.'))
                             ->success()
                             ->send();
 
@@ -65,7 +68,7 @@ class Billing extends Page
 
         return [
             Action::make('manageBilling')
-                ->label('Manage Billing')
+                ->label(__('Manage Billing'))
                 ->icon('heroicon-o-credit-card')
                 ->color('primary')
                 ->url(fn () => route('filament.tenant.billing.portal')),
