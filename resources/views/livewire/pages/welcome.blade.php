@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\SubscriptionPlan;
 use function Livewire\Volt\layout;
 use function Livewire\Volt\state;
+use function Livewire\Volt\computed;
 
 layout('livewire.components.layouts.guest');
 
@@ -23,62 +25,53 @@ $menu = [
     ],
 ];
 
-$prices = [
-    [
-        'title' => 'الأساسية',
-        'description' => 'مثالية للشركات الصغيرة',
-        'price' => '$29',
-        'button' => 'ابدأ الآن',
-        'route' => 'auth.register',
-        'includes' => [
-            '100 منتج',
-            'مستخدمين 2',
-            '1 جيجابايت تخزين',
-            'تقارير أساسية',
-            'دعم عبر البريد الإلكتروني',
-        ],
-        'excludes' => [
-            'التحليلات المتقدمة',
-            'تقارير مخصصة',
-            'دعم أولوية',
-        ],
-    ],
-    [
-        'title' => 'الاحترافية',
-        'description' => 'للشركات المتنامية',
-        'price' => '$99',
-        'button' => 'ابدأ الآن',
-        'route' => 'auth.register',
-        'includes' => [
-            '1,000 منتج',
-            '10 مستخدمين',
-            '10 جيجابايت تخزين',
-            'تقارير متقدمة',
-            'التحليلات المتقدمة',
-            'دعم أولوية',
-        ],
-        'excludes' => [
-            'علامة بيضاء',
-        ],
-    ],
-    [
-        'title' => 'المؤسسات',
-        'description' => 'لا حدود للموارد',
-        'price' => '$299',
-        'button' => 'ابدأ الآن',
-        'route' => 'auth.register',
-        'includes' => [
-            'منتجات غير محدودة',
-            'مستخدمين غير محدودين',
-            'تخزين غير محدود',
-            'جميع الميزات',
-            'علامة بيضاء',
-            'دعم مخصص',
-            'تكاملات مخصصة',
-        ],
-        'excludes' => [],
-    ],
-];
+$prices = computed(function () {
+    $plans = SubscriptionPlan::active()->orderBy('sort_order')->get();
+    
+    // If no plans exist, return empty array
+    if ($plans->isEmpty()) {
+        return [];
+    }
+    
+    return $plans->map(function ($plan) {
+        $includes = [];
+        $excludes = [];
+        
+        // Build features list
+        if ($plan->features) {
+            foreach ($plan->features as $feature => $value) {
+                $featureName = match($feature) {
+                    'products' => $value == -1 ? 'منتجات غير محدودة' : number_format($value) . ' منتج',
+                    'users' => $value == -1 ? 'مستخدمين غير محدودين' : number_format($value) . ' مستخدمين',
+                    'storage' => $value == -1 ? 'تخزين غير محدود' : $value . ' جيجابايت تخزين',
+                    'reports' => 'تقارير متقدمة',
+                    'analytics' => 'التحليلات المتقدمة',
+                    'support' => match($value) {
+                        'priority' => 'دعم أولوية',
+                        'email' => 'دعم عبر البريد الإلكتروني',
+                        'custom' => 'دعم مخصص',
+                        default => 'دعم',
+                    },
+                    'white_label' => 'علامة بيضاء',
+                    'custom_integrations' => 'تكاملات مخصصة',
+                    default => ucfirst(str_replace('_', ' ', $feature)),
+                };
+                
+                $includes[] = $featureName;
+            }
+        }
+        
+        return [
+            'title' => $plan->name,
+            'description' => $plan->description ?? '',
+            'price' => '$' . number_format($plan->price, 0),
+            'button' => 'ابدأ الآن',
+            'route' => 'auth.register',
+            'includes' => $includes,
+            'excludes' => $excludes,
+        ];
+    })->toArray();
+});
 
 $mainFeatures = [
     [
@@ -113,7 +106,6 @@ $mainFeatures = [
 
 state([
     'menu' => $menu,
-    'prices' => $prices,
     'mainFeatures' => $mainFeatures,
 ]);
 
@@ -287,7 +279,7 @@ state([
         <p class="mt-5 text-xl text-gray-500 sm:text-center">اختر الخطة المناسبة لاحتياجات عملك - تجربة مجانية لمدة 14 يومًا</p>
       </div>
       <div class="mt-12 space-y-4 sm:mt-16 sm:grid sm:grid-cols-1 md:grid-cols-3 sm:gap-6 sm:space-y-0 mx-auto max-w-6xl xl:mx-0 xl:max-w-none justify-items-center">
-        @foreach($prices as $price)
+        @foreach($this->prices as $price)
         <div class="divide-y divide-gray-200 rounded-lg border border-gray-200 shadow-sm w-80">
           <div class="p-6">
             <p class="text-lg font-medium leading-6 text-gray-900">{{ $price['title'] }}</p>

@@ -27,7 +27,8 @@ class Billing extends Page
     {
         $tenant = tenancy()->tenant;
 
-        if (!$tenant || $tenant->onTrial()) {
+        // Allow choosing plan if on trial or subscription expired
+        if (!$tenant || $tenant->onTrial() || !$tenant->hasActiveSubscription()) {
             return [
                 Action::make('choosePlan')
                     ->label('Choose Plan')
@@ -121,5 +122,11 @@ class Billing extends Page
     public function getAvailablePlans()
     {
         return SubscriptionPlan::active()->orderBy('sort_order')->get();
+    }
+
+    public function isSubscriptionExpired(): bool
+    {
+        $tenant = tenancy()->tenant;
+        return $tenant && !$tenant->hasActiveSubscription() && !$tenant->onTrial();
     }
 }

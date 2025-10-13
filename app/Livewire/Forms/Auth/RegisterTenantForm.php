@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms\Auth;
 
+use App\Models\SubscriptionPlan;
 use App\Rules\Domain;
 use App\Services\RegisterTenant;
 use Filament\Forms\Components\Select;
@@ -86,6 +87,22 @@ class RegisterTenantForm extends Component implements HasForms
                                 ->suffix('.'.config('tenancy.central_domains')[0]),
                         ])
                         ->icon('heroicon-o-globe-alt'),
+                    Wizard\Step::make(__('Subscription Plan'))
+                        ->schema([
+                            Select::make('subscription_plan_id')
+                                ->label(__('Select Plan'))
+                                ->options(function () {
+                                    return SubscriptionPlan::active()
+                                        ->orderBy('sort_order')
+                                        ->get()
+                                        ->mapWithKeys(function ($plan) {
+                                            return [$plan->id => $plan->name . ' - $' . number_format($plan->price, 2) . '/' . $plan->interval];
+                                        });
+                                })
+                                ->helperText(__('You can change your plan later. All plans include a 14-day free trial.'))
+                                ->required(),
+                        ])
+                        ->icon('heroicon-o-credit-card'),
                 ])
                     ->submitAction(new HtmlString(
                         Blade::render(<<<'BLADE'

@@ -11,6 +11,40 @@
     transform: translateY(-100px);
   }
 }
+
+/* RTL fixes for POS page */
+html[dir="rtl"] .space-x-4 > *:not(:first-child) {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+html[dir="rtl"] .flex-row-reverse {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .pl-10 {
+  padding-left: 1rem;
+  padding-right: 2.5rem;
+}
+
+html[dir="rtl"] .left-3 {
+  left: auto;
+  right: 0.75rem;
+}
+
+html[dir="rtl"] .mr-2 {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+html[dir="rtl"] .ml-3 {
+  margin-left: 0;
+  margin-right: 0.75rem;
+}
+
+html[dir="rtl"] .gap-x-8 {
+  gap: 2rem;
+}
 </style>
   <div x-data="pos()"
     class="relative min-h-screen bg-gray-50">

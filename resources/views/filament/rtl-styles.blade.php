@@ -92,6 +92,42 @@
         direction: rtl;
     }
 
+    /* Fix padding and margins for RTL */
+    html[dir="rtl"] .fi-header-actions,
+    html[dir="rtl"] .fi-header-heading {
+        padding-right: 0;
+        padding-left: 1rem;
+    }
+
+    html[dir="rtl"] .fi-btn {
+        text-align: center;
+    }
+
+    html[dir="rtl"] .fi-btn-icon {
+        margin-right: 0;
+        margin-left: 0.5rem;
+    }
+
+    html[dir="rtl"] .fi-section-header {
+        text-align: right;
+    }
+
+    html[dir="rtl"] .fi-card {
+        text-align: right;
+    }
+
+    /* Fix margins in grid layouts */
+    html[dir="rtl"] .grid > * {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    /* Fix page header pluralization issue - hide trailing 's' */
+    html[dir="rtl"] .fi-header-heading::after {
+        content: '';
+        display: none;
+    }
+
     /* Sidebar when collapsed on RTL */
     @media (max-width: 1023px) {
         html[dir="rtl"] .fi-sidebar {
