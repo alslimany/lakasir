@@ -10,6 +10,14 @@ class SubscriptionPlan extends Model
 {
     use HasFactory;
 
+    /**
+     * The connection name for the model.
+     * Subscription plans are stored in the central database.
+     *
+     * @var string|null
+     */
+    protected $connection = 'mysql';
+
     protected $fillable = [
         'name',
         'slug',

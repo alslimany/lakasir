@@ -6,100 +6,9 @@
         $trialInfo = $this->getTrialInfo();
         $usageInfo = $this->getUsageInfo();
         $availablePlans = $this->getAvailablePlans();
-        $selectedPlan = $this->getSelectedPlan();
     @endphp
 
-    {{-- Include Moamalat Pay Component --}}
-    @if($selectedPlan)
-        <x-moamalat-pay />
-    @endif
-
     <div class="space-y-6">
-        {{-- Payment Section --}}
-        @if($selectedPlan)
-            <x-filament::section>
-                <x-slot name="heading">
-                    {{ __('Complete Payment') }}
-                </x-slot>
-
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-                        <div>
-                            <h3 class="text-lg font-bold">{{ $selectedPlan->name }}</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ $selectedPlan->description }}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-2xl font-bold">{{ number_format($selectedPlan->price, 2) }} LYD</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('per') }} {{ __($selectedPlan->interval) }}</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-center gap-4">
-                        <button 
-                            type="button"
-                            onclick="moamalatPayNow()"
-                            class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition">
-                            {{ __('Pay Now') }}
-                        </button>
-                        <button 
-                            type="button"
-                            wire:click="clearSelectedPlan"
-                            class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition">
-                            {{ __('Cancel') }}
-                        </button>
-                    </div>
-                </div>
-            </x-filament::section>
-
-            <script>
-                function moamalatPayNow() {
-                    // Fetch payment data from backend
-                    fetch('{{ route("subscription.initiate-payment") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            plan_id: {{ $selectedPlan->id }}
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Initialize Moamalat payment with amount and reference
-                            if (typeof _moamalatPay !== 'undefined') {
-                                _moamalatPay.pay(data.amount, data.reference);
-                            } else {
-                                console.error('Moamalat Pay is not initialized');
-                                alert('Payment system is not available. Please try again later.');
-                            }
-                        } else {
-                            alert('Failed to initiate payment: ' + (data.error || 'Unknown error'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while initiating payment');
-                    });
-                }
-
-                // Listen for payment completion
-                addEventListener("moamalatCompleted", function (e) {
-                    console.log('Payment completed:', e.detail);
-                    // Redirect to success page
-                    window.location.href = '{{ route("subscription.payment.success") }}';
-                });
-
-                // Listen for payment cancellation
-                addEventListener("moamalatCanceled", function (e) {
-                    console.log('Payment canceled:', e.detail);
-                    // Redirect to cancel page
-                    window.location.href = '{{ route("subscription.payment.cancel") }}';
-                });
-            </script>
-        @endif
-
         {{-- Subscription Expired Banner --}}
         @if($this->isSubscriptionExpired())
             <x-filament::section>
@@ -289,6 +198,10 @@
                 {{ __('Available Plans') }}
             </x-slot>
 
+            <x-slot name="description">
+                {{ __('To change your subscription plan, please contact the system administrator.') }}
+            </x-slot>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 @foreach($availablePlans as $plan)
                     <div class="border rounded-lg p-6 {{ $currentPlan?->id === $plan->id ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700' }}">
@@ -320,15 +233,9 @@
                         </ul>
 
                         @if($currentPlan?->id === $plan->id)
-                            <button disabled class="w-full py-2 px-4 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed">
+                            <div class="w-full py-2 px-4 bg-success-100 text-success-700 dark:bg-success-900/20 dark:text-success-400 rounded-lg text-center font-semibold">
                                 {{ __('Current Plan') }}
-                            </button>
-                        @else
-                            <button 
-                                wire:click="$dispatch('open-modal', { id: 'choose-plan-modal' })"
-                                class="w-full py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition">
-                                {{ __('Choose Plan') }}
-                            </button>
+                            </div>
                         @endif
                     </div>
                 @endforeach
