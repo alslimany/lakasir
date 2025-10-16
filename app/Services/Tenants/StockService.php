@@ -32,15 +32,8 @@ class StockService
         $lastStock = $this->adjustStockPrepare($product);
 
         if ($lastStock) {
-            if ($lastStock->stock < $qty) {
-                $qty = $qty + $lastStock->stock;
-                $lastStock->stock = 0;
-                $lastStock->save();
-                $this->reduceStock($product, $qty);
-            } else {
-                $lastStock->stock = $lastStock->stock + $qty;
-                $lastStock->save();
-            }
+            $lastStock->stock = $lastStock->stock + $qty;
+            $lastStock->save();
         } else {
             $product->stock = $product->stock + $qty;
             $product->save();

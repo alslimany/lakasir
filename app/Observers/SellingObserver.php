@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Tenants\CashDrawer;
 use App\Models\Tenants\Selling;
 use App\Models\Tenants\Setting;
+use App\Services\Tenants\StockService;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Support\Str;
 
@@ -33,5 +34,28 @@ class SellingObserver extends AbstractObserver implements DataAwareRule
             $selling->cash_drawer_id = CashDrawer::lastOpened()->first()->id;
         }
         $selling->user()->associate(auth()->user());
+    }
+
+    public function deleting(Selling $selling)
+    {
+        // Restore stock for each selling detail before deletion
+        $stockService = app(StockService::class);
+        $products = collect();
+        
+        foreach ($selling->sellingDetails as $detail) {
+            $product = $detail->product;
+            if ($product && !$product->is_non_stock) {
+                $stockService->addStock($product, $detail->qty);
+                $products->push($product);
+            }
+        }
+        
+        // Recalculate product stock from Stock entries
+        if ($products->isNotEmpty()) {
+            \App\Events\RecalculateEvent::dispatch($products, []);
+        }
+        
+        // Delete all selling details
+        $selling->sellingDetails()->delete();
     }
 }
