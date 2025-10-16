@@ -4,8 +4,63 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f184f83fe94ccedb3aa5fa86c25a818c",
+    "content-hash": "fb7ca78db2de15baba275f197a177494",
     "packages": [
+        {
+            "name": "alifaraun/laravel-moamalat-pay",
+            "version": "v5.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/alifaraun/laravel-moamalat-pay.git",
+                "reference": "05ac1773a11b97fb48cd6cf2eddabc4325eb4459"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/alifaraun/laravel-moamalat-pay/zipball/05ac1773a11b97fb48cd6cf2eddabc4325eb4459",
+                "reference": "05ac1773a11b97fb48cd6cf2eddabc4325eb4459",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/framework": "^11.0"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "7.8",
+                "larastan/larastan": "2.x-dev",
+                "laravel/legacy-factories": "1.x-dev",
+                "laravel/pint": "dev-main",
+                "nunomaduro/collision": "^8.0",
+                "orchestra/testbench": "9.x-dev"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "MoamalatPay\\Providers\\MoamalatPayProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MoamalatPay\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ali Faraun",
+                    "email": "ali1996426@hotmail.com"
+                }
+            ],
+            "description": "Easy - Moamalat Lightbox integration for Laravel.",
+            "support": {
+                "issues": "https://github.com/alifaraun/laravel-moamalat-pay/issues",
+                "source": "https://github.com/alifaraun/laravel-moamalat-pay/tree/v5.1"
+            },
+            "time": "2024-09-16T15:15:41+00:00"
+        },
         {
             "name": "anourvalar/eloquent-serialize",
             "version": "1.2.29",

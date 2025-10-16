@@ -2,12 +2,104 @@
     @php
         $tenant = tenancy()->tenant;
         $currentPlan = $this->getCurrentPlan();
+        $subscriptionInfo = $this->getSubscriptionInfo();
         $trialInfo = $this->getTrialInfo();
         $usageInfo = $this->getUsageInfo();
         $availablePlans = $this->getAvailablePlans();
+        $selectedPlan = $this->getSelectedPlan();
     @endphp
 
+    {{-- Include Moamalat Pay Component --}}
+    @if($selectedPlan)
+        <x-moamalat-pay />
+    @endif
+
     <div class="space-y-6">
+        {{-- Payment Section --}}
+        @if($selectedPlan)
+            <x-filament::section>
+                <x-slot name="heading">
+                    {{ __('Complete Payment') }}
+                </x-slot>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                        <div>
+                            <h3 class="text-lg font-bold">{{ $selectedPlan->name }}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ $selectedPlan->description }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold">{{ number_format($selectedPlan->price, 2) }} LYD</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('per') }} {{ __($selectedPlan->interval) }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-center gap-4">
+                        <button 
+                            type="button"
+                            onclick="moamalatPayNow()"
+                            class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition">
+                            {{ __('Pay Now') }}
+                        </button>
+                        <button 
+                            type="button"
+                            wire:click="clearSelectedPlan"
+                            class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition">
+                            {{ __('Cancel') }}
+                        </button>
+                    </div>
+                </div>
+            </x-filament::section>
+
+            <script>
+                function moamalatPayNow() {
+                    // Fetch payment data from backend
+                    fetch('{{ route("subscription.initiate-payment") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            plan_id: {{ $selectedPlan->id }}
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Initialize Moamalat payment with amount and reference
+                            if (typeof _moamalatPay !== 'undefined') {
+                                _moamalatPay.pay(data.amount, data.reference);
+                            } else {
+                                console.error('Moamalat Pay is not initialized');
+                                alert('Payment system is not available. Please try again later.');
+                            }
+                        } else {
+                            alert('Failed to initiate payment: ' + (data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while initiating payment');
+                    });
+                }
+
+                // Listen for payment completion
+                addEventListener("moamalatCompleted", function (e) {
+                    console.log('Payment completed:', e.detail);
+                    // Redirect to success page
+                    window.location.href = '{{ route("subscription.payment.success") }}';
+                });
+
+                // Listen for payment cancellation
+                addEventListener("moamalatCanceled", function (e) {
+                    console.log('Payment canceled:', e.detail);
+                    // Redirect to cancel page
+                    window.location.href = '{{ route("subscription.payment.cancel") }}';
+                });
+            </script>
+        @endif
+
         {{-- Subscription Expired Banner --}}
         @if($this->isSubscriptionExpired())
             <x-filament::section>
@@ -69,6 +161,33 @@
                             <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('per') }} {{ __($currentPlan->interval) }}</p>
                         </div>
                     </div>
+
+                    @if($subscriptionInfo)
+                        <div class="border-t dark:border-gray-700 pt-4">
+                            <h4 class="font-semibold mb-3">{{ __('Subscription Details') }}</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                @if($subscriptionInfo['started_at'])
+                                    <div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Started') }}</p>
+                                        <p class="font-semibold">{{ $subscriptionInfo['started_at']->format('M d, Y') }}</p>
+                                    </div>
+                                @endif
+                                @if($subscriptionInfo['expires_at'])
+                                    <div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Expires') }}</p>
+                                        <p class="font-semibold {{ $subscriptionInfo['is_expired'] ? 'text-danger-600' : '' }}">
+                                            {{ $subscriptionInfo['expires_at']->format('M d, Y') }}
+                                            @if(!$subscriptionInfo['is_expired'])
+                                                ({{ $subscriptionInfo['expires_at']->diffForHumans() }})
+                                            @else
+                                                ({{ __('Expired') }})
+                                            @endif
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
 
                     @if($currentPlan->features)
                         <div class="border-t dark:border-gray-700 pt-4">

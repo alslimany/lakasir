@@ -41,6 +41,17 @@ Route::middleware([
         Route::get('/', function () {
             return redirect()->to('/member');
         });
+        
+        // Subscription routes
+        Route::prefix('subscription')->name('subscription.')->group(function () {
+            Route::post('/initiate-payment', [App\Http\Controllers\SubscriptionController::class, 'initiatePayment'])
+                ->name('initiate-payment');
+            Route::get('/payment/success', [App\Http\Controllers\SubscriptionController::class, 'handleSuccess'])
+                ->name('payment.success');
+            Route::get('/payment/cancel', [App\Http\Controllers\SubscriptionController::class, 'handleCancel'])
+                ->name('payment.cancel');
+        });
+        
         Route::get('/member/purchasing-report/generate', PurchasingReportController::class)
             ->name('purchasing-report.generate');
         Route::get('/member/selling-report/generate', SellingReportController::class)

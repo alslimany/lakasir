@@ -20,7 +20,7 @@ class RegisterTenant
             'tenancy_db_name' => 'lakasir_'.$name,
             'tenancy_email' => $data['email'],
             'is_active' => true,
-            'trial_ends_at' => now()->addDays(14), // 14-day trial
+            'trial_ends_at' => now()->addMonth(), // 1 month trial
             'subscription_plan_id' => $data['subscription_plan_id'] ?? null,
         ]);
 
