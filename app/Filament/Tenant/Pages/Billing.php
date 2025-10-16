@@ -47,12 +47,12 @@ class Billing extends Page
                     ->form([
                         Select::make('plan')
                             ->label(__('Select Plan'))
-                            ->options(SubscriptionPlan::active()->pluck('name', 'id'))
+                            ->options(SubscriptionPlan::on('mysql')->active()->pluck('name', 'id'))
                             ->required()
                             ->reactive(),
                     ])
                     ->action(function (array $data) {
-                        $plan = SubscriptionPlan::find($data['plan']);
+                        $plan = SubscriptionPlan::on('mysql')->find($data['plan']);
                         if (!$plan) {
                             Notification::make()
                                 ->title(__('Plan not found'))
@@ -84,12 +84,12 @@ class Billing extends Page
                 ->form([
                     Select::make('plan')
                         ->label(__('Select New Plan'))
-                        ->options(SubscriptionPlan::active()->pluck('name', 'id'))
+                        ->options(SubscriptionPlan::on('mysql')->active()->pluck('name', 'id'))
                         ->required()
                         ->reactive(),
                 ])
                 ->action(function (array $data) {
-                    $plan = SubscriptionPlan::find($data['plan']);
+                    $plan = SubscriptionPlan::on('mysql')->find($data['plan']);
                     if (!$plan) {
                         Notification::make()
                             ->title(__('Plan not found'))
@@ -175,7 +175,7 @@ class Billing extends Page
 
     public function getAvailablePlans()
     {
-        return SubscriptionPlan::active()->orderBy('sort_order')->get();
+        return SubscriptionPlan::on('mysql')->active()->orderBy('sort_order')->get();
     }
 
     public function isSubscriptionExpired(): bool
@@ -188,7 +188,7 @@ class Billing extends Page
     {
         $planId = session('selected_plan_id');
         if ($planId) {
-            return SubscriptionPlan::find($planId);
+            return SubscriptionPlan::on('mysql')->find($planId);
         }
         return null;
     }

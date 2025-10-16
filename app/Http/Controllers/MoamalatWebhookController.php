@@ -68,8 +68,9 @@ class MoamalatWebhookController extends Controller
             // Get the amount paid (convert from fils to dinar)
             $amountPaid = $notification->Amount / 1000;
 
-            // Find the subscription plan that matches this amount
-            $plan = SubscriptionPlan::where('price', $amountPaid)
+            // Find the subscription plan that matches this amount from central database
+            $plan = SubscriptionPlan::on('mysql')
+                ->where('price', $amountPaid)
                 ->where('is_active', true)
                 ->first();
 

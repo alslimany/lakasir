@@ -23,11 +23,13 @@ class SubscriptionController extends Controller
     public function initiatePayment(Request $request)
     {
         $request->validate([
-            'plan_id' => 'required|exists:subscription_plans,id',
+            'plan_id' => 'required|integer',
         ]);
 
         $tenant = tenancy()->tenant;
-        $plan = SubscriptionPlan::findOrFail($request->plan_id);
+        
+        // Query from central database explicitly
+        $plan = SubscriptionPlan::on('mysql')->findOrFail($request->plan_id);
 
         if (!$tenant) {
             return response()->json([
@@ -74,7 +76,8 @@ class SubscriptionController extends Controller
         }
 
         try {
-            $plan = SubscriptionPlan::findOrFail($planId);
+            // Query from central database explicitly
+            $plan = SubscriptionPlan::on('mysql')->findOrFail($planId);
             
             // Calculate subscription dates
             $now = now();
