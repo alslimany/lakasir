@@ -27,16 +27,15 @@ trait CartInteraction
     public function addCart(Product $product, ?array $data = null)
     {
         $auth = Filament::auth()->id();
+        $existingCartItem = CartItem::whereProductId($product->getKey())
+            ->cashier()
+            ->first();
+            
         if (! $data) {
-            $qty = (
-                CartItem::whereProductId($product->getKey())
-                    ->cashier()
-                    ->first()
-                ->qty ?? 0
-            ) + 1;
+            $qty = ($existingCartItem->qty ?? 0) + 1;
         } else {
             if (!$data['amount']) {
-                $this->deleteCart(CartItem::whereProductId($product->getKey())->first());
+                $this->deleteCart($existingCartItem);
                 $this->mount();
                 return;
             }
@@ -46,7 +45,8 @@ trait CartInteraction
             return;
         }
         
-        $customUnitPrice = $data['custom_price'] ?? null;
+        // Use custom price from data if provided, otherwise keep existing custom price
+        $customUnitPrice = isset($data['custom_price']) ? $data['custom_price'] : ($existingCartItem->custom_unit_price ?? null);
         $unitPrice = $customUnitPrice ?: $product->selling_price;
         
         CartItem::query()

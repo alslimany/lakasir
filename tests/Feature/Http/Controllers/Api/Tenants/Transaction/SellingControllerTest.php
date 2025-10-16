@@ -493,6 +493,72 @@ test('cashier cannot create the sellig with expired voucher', function () {
         ->assertJsonValidationErrors('voucher');
 });
 
+test('cashier can create the selling with custom price per item', function () {
+    $user = User::first();
+
+    $response = actingAs($user)->postJson('/api/transaction/selling', [
+        'payed_money' => 15000,
+        'friend_price' => false,
+        'products' => [
+            [
+                'product_id' => $this->product->id, // default price 20000
+                'qty' => 1,
+                'price' => 15000, // custom price
+            ],
+        ],
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('message', 'success create selling');
+
+    $this->assertDatabaseHas('sellings', [
+        'payed_money' => 15000,
+        'total_price' => 15000,
+        'tax_price' => 0.00,
+        'tax' => 0,
+        'money_changes' => 0,
+    ]);
+
+    $this->assertDatabaseHas('selling_details', [
+        'product_id' => $this->product->id,
+        'price' => 15000,
+        'cost' => 10000,
+    ]);
+});
+
+test('cashier can create the selling with custom price per item lower than cost', function () {
+    $user = User::first();
+
+    $response = actingAs($user)->postJson('/api/transaction/selling', [
+        'payed_money' => 8000,
+        'friend_price' => false,
+        'products' => [
+            [
+                'product_id' => $this->product->id, // default price 20000, cost 10000
+                'qty' => 1,
+                'price' => 8000, // custom price below cost (at loss)
+            ],
+        ],
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('message', 'success create selling');
+
+    $this->assertDatabaseHas('sellings', [
+        'payed_money' => 8000,
+        'total_price' => 8000,
+        'tax_price' => 0.00,
+        'tax' => 0,
+        'money_changes' => 0,
+    ]);
+
+    $this->assertDatabaseHas('selling_details', [
+        'product_id' => $this->product->id,
+        'price' => 8000,
+        'cost' => 10000,
+    ]);
+});
+
 beforeEach(function () {
     Setting::set('selling_method', 'fifo');
     Cache::clear();

@@ -52,6 +52,19 @@ class CartItem extends Model
         return price_format($priceUnit ?? $this->price);
     }
 
+    public function getEffectiveUnitPriceAttribute()
+    {
+        if ($this->priceUnit) {
+            return $this->priceUnit->selling_price;
+        }
+        
+        if ($this->custom_unit_price) {
+            return $this->custom_unit_price;
+        }
+        
+        return $this->product->selling_price;
+    }
+
     public function getFinalPriceFormatAttribute()
     {
         return price_format($this->price - ($this->discount_price ?? 0));
