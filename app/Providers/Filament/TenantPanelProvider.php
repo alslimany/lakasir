@@ -13,6 +13,7 @@ use App\Features\StockOpname;
 use App\Features\Supplier;
 use App\Features\User;
 use App\Features\Voucher;
+use App\Filament\Tenant\Pages\Billing;
 use App\Filament\Tenant\Pages\CartItem;
 use App\Filament\Tenant\Pages\Cashier;
 use App\Filament\Tenant\Pages\CashierReport;
@@ -234,6 +235,7 @@ class TenantPanelProvider extends PanelProvider
                 $this->generateNavigationItem(GeneralSetting::class),
                 $this->generateNavigationItem(CurrencyResource::class),
                 $this->generateNavigationItem(Printer::class),
+                $this->generateNavigationItem(Billing::class),
             ]),
         ];
     }

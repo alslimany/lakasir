@@ -14,6 +14,8 @@ class Billing extends Page
 
     protected static string $view = 'filament.tenant.pages.billing';
 
+    protected static ?string $navigationLabel = 'Billing';
+
     public static function getNavigationGroup(): ?string
     {
         return __('Settings');
