@@ -40,11 +40,19 @@ class SellingObserver extends AbstractObserver implements DataAwareRule
     {
         // Restore stock for each selling detail before deletion
         $stockService = app(StockService::class);
+        $products = collect();
+        
         foreach ($selling->sellingDetails as $detail) {
             $product = $detail->product;
             if ($product && !$product->is_non_stock) {
                 $stockService->addStock($product, $detail->qty);
+                $products->push($product);
             }
+        }
+        
+        // Recalculate product stock from Stock entries
+        if ($products->isNotEmpty()) {
+            \App\Events\RecalculateEvent::dispatch($products, []);
         }
         
         // Delete all selling details
