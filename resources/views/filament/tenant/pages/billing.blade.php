@@ -9,10 +9,8 @@
         $selectedPlan = $this->getSelectedPlan();
     @endphp
 
-    {{-- Include Moamalat Pay Component --}}
-    @if($selectedPlan)
-        <x-moamalat-pay />
-    @endif
+    {{-- Include Moamalat Pay Component - Always include for payment functionality --}}
+    <x-moamalat-pay />
 
     <div class="space-y-6">
         {{-- Payment Section --}}
@@ -50,55 +48,67 @@
                     </div>
                 </div>
             </x-filament::section>
+        @endif
 
-            <script>
-                function moamalatPayNow() {
-                    // Fetch payment data from backend
-                    fetch('{{ route("subscription.initiate-payment") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            plan_id: {{ $selectedPlan->id }}
+        <script>
+            // Define payment function in global scope
+            if (typeof window.moamalatPayNow === 'undefined') {
+                window.moamalatPayNow = function() {
+                    @if($selectedPlan)
+                        // Fetch payment data from backend
+                        fetch('{{ route("subscription.initiate-payment") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                plan_id: {{ $selectedPlan->id }}
+                            })
                         })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Initialize Moamalat payment with amount and reference
-                            if (typeof _moamalatPay !== 'undefined') {
-                                _moamalatPay.pay(data.amount, data.reference);
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Initialize Moamalat payment with amount and reference
+                                if (typeof _moamalatPay !== 'undefined') {
+                                    _moamalatPay.pay(data.amount, data.reference);
+                                } else {
+                                    console.error('Moamalat Pay is not initialized');
+                                    alert('Payment system is not available. Please try again later.');
+                                }
                             } else {
-                                console.error('Moamalat Pay is not initialized');
-                                alert('Payment system is not available. Please try again later.');
+                                alert('Failed to initiate payment: ' + (data.error || 'Unknown error'));
                             }
-                        } else {
-                            alert('Failed to initiate payment: ' + (data.error || 'Unknown error'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while initiating payment');
-                    });
-                }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while initiating payment');
+                        });
+                    @else
+                        alert('Please select a plan first');
+                    @endif
+                };
+            }
+
+            // Setup event listeners only once
+            if (!window.moamalatEventsSetup) {
+                window.moamalatEventsSetup = true;
 
                 // Listen for payment completion
-                addEventListener("moamalatCompleted", function (e) {
+                window.addEventListener("moamalatCompleted", function (e) {
                     console.log('Payment completed:', e.detail);
                     // Redirect to success page
                     window.location.href = '{{ route("subscription.payment.success") }}';
                 });
 
                 // Listen for payment cancellation
-                addEventListener("moamalatCanceled", function (e) {
+                window.addEventListener("moamalatCanceled", function (e) {
                     console.log('Payment canceled:', e.detail);
                     // Redirect to cancel page
                     window.location.href = '{{ route("subscription.payment.cancel") }}';
                 });
-            </script>
-        @endif
+            }
+        </script>
 
         {{-- Subscription Expired Banner --}}
         @if($this->isSubscriptionExpired())
