@@ -27,16 +27,15 @@ trait CartInteraction
     public function addCart(Product $product, ?array $data = null)
     {
         $auth = Filament::auth()->id();
+        $existingCartItem = CartItem::whereProductId($product->getKey())
+            ->cashier()
+            ->first();
+            
         if (! $data) {
-            $qty = (
-                CartItem::whereProductId($product->getKey())
-                    ->cashier()
-                    ->first()
-                ->qty ?? 0
-            ) + 1;
+            $qty = ($existingCartItem->qty ?? 0) + 1;
         } else {
             if (!$data['amount']) {
-                $this->deleteCart(CartItem::whereProductId($product->getKey())->first());
+                $this->deleteCart($existingCartItem);
                 $this->mount();
                 return;
             }
@@ -45,6 +44,11 @@ trait CartInteraction
         if (! $this->validateStock($product, $qty)) {
             return;
         }
+        
+        // Use custom price from data if provided, otherwise keep existing custom price
+        $customUnitPrice = isset($data['custom_price']) ? $data['custom_price'] : ($existingCartItem->custom_unit_price ?? null);
+        $unitPrice = $customUnitPrice ?: $product->selling_price;
+        
         CartItem::query()
             ->updateOrCreate(
                 [
@@ -53,7 +57,8 @@ trait CartInteraction
                 ],
                 [
                     'qty' => $qty,
-                    'price' => $product->selling_price * $qty,
+                    'price' => $unitPrice * $qty,
+                    'custom_unit_price' => $customUnitPrice,
                     'user_id' => $auth,
                     'product_id' => $product->getKey(),
                 ]
@@ -74,7 +79,8 @@ trait CartInteraction
 
             return;
         }
-        $price = $product->selling_price * ($qty);
+        $unitPrice = $cartItem->custom_unit_price ?: $product->selling_price;
+        $price = $unitPrice * ($qty);
         $cartItem->fill([
             'qty' => $qty,
             'price' => $price,
@@ -118,7 +124,8 @@ trait CartInteraction
 
             return;
         }
-        $price = $cartItem->product->selling_price * ((int) $value);
+        $unitPrice = $cartItem->custom_unit_price ?: $cartItem->product->selling_price;
+        $price = $unitPrice * ((int) $value);
         $cartItem->fill([
             'qty' => $value,
             'price' => $price,

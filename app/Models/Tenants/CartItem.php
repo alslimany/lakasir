@@ -22,6 +22,7 @@ class CartItem extends Model
         'user_id',
         'product_id',
         'price_unit_id',
+        'custom_unit_price',
     ];
 
     protected $appends = ['price_format_money', 'discount_price_format', 'final_price_format'];
@@ -49,6 +50,19 @@ class CartItem extends Model
         }
 
         return price_format($priceUnit ?? $this->price);
+    }
+
+    public function getEffectiveUnitPriceAttribute()
+    {
+        if ($this->priceUnit) {
+            return $this->priceUnit->selling_price;
+        }
+        
+        if ($this->custom_unit_price) {
+            return $this->custom_unit_price;
+        }
+        
+        return $this->product->selling_price;
     }
 
     public function getFinalPriceFormatAttribute()

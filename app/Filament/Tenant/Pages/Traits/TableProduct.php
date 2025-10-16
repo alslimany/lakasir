@@ -109,6 +109,12 @@ trait TableProduct
                                 },
                             ])
                             ->default(1),
+                        TextInput::make('custom_price')
+                            ->label(__('Custom Price (Optional)'))
+                            ->numeric()
+                            ->minValue(0)
+                            ->placeholder(fn (Product $product) => $product->selling_price)
+                            ->helperText(fn (Product $product) => __('Default: ').$product->selling_price),
                     ])
                     ->extraAttributes([
                         'class' => 'mr-auto',

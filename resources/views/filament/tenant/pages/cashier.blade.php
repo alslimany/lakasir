@@ -75,7 +75,12 @@
               id="{{ $item->id }}" key="{{ rand() }}">
               <div class="grid items-center space-x-3">
                 <div class="flex justify-between">
-                  <p class="font-semibold"> {{ $item->product->name }}</p>
+                  <div>
+                    <p class="font-semibold"> {{ $item->product->name }}</p>
+                    @if($item->custom_unit_price && $item->custom_unit_price != $item->product->selling_price)
+                      <p class="text-xs text-gray-500">{{ __('Custom price') }}: {{ price_format($item->custom_unit_price) }}/{{ __('unit') }}</p>
+                    @endif
+                  </div>
                   <p class="font-semibold text-lakasir-primary">{{ $item->price_format_money }}</p>
                 </div>
               </div>
@@ -493,12 +498,26 @@
             this.changes();
             return;
           }
-          this.displayValue += number;
+          // Convert any Arabic-Indic numerals to Western Arabic numerals
+          let normalizedNumber = String(number).replace(/[٠-٩]/g, function(d) {
+            return d.charCodeAt(0) - 1632;
+          }).replace(/[۰-۹]/g, function(d) {
+            return d.charCodeAt(0) - 1776;
+          });
+          this.displayValue += normalizedNumber;
           this.$refs.payedMoney.value = moneyFormat(this.displayValue);
           this.changes();
         },
         changes() {
-          let num = parseFloat(this.$refs.payedMoney.value.replace(/,/g, ''));
+          // Normalize any Arabic-Indic numerals to Western Arabic numerals
+          let value = this.$refs.payedMoney.value.replace(/[٠-٩]/g, function(d) {
+            return d.charCodeAt(0) - 1632;
+          }).replace(/[۰-۹]/g, function(d) {
+            return d.charCodeAt(0) - 1776;
+          });
+          this.$refs.payedMoney.value = value;
+          
+          let num = parseFloat(value.replace(/,/g, ''));
           num = isNaN(num) ? 0 : num;
           $wire.cartDetail['money_changes'] = num - (this.subtotal);
           $wire.cartDetail['payed_money'] = num;
