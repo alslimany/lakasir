@@ -45,6 +45,10 @@ trait CartInteraction
         if (! $this->validateStock($product, $qty)) {
             return;
         }
+        
+        $customUnitPrice = $data['custom_price'] ?? null;
+        $unitPrice = $customUnitPrice ?: $product->selling_price;
+        
         CartItem::query()
             ->updateOrCreate(
                 [
@@ -53,7 +57,8 @@ trait CartInteraction
                 ],
                 [
                     'qty' => $qty,
-                    'price' => $product->selling_price * $qty,
+                    'price' => $unitPrice * $qty,
+                    'custom_unit_price' => $customUnitPrice,
                     'user_id' => $auth,
                     'product_id' => $product->getKey(),
                 ]
@@ -74,7 +79,8 @@ trait CartInteraction
 
             return;
         }
-        $price = $product->selling_price * ($qty);
+        $unitPrice = $cartItem->custom_unit_price ?: $product->selling_price;
+        $price = $unitPrice * ($qty);
         $cartItem->fill([
             'qty' => $qty,
             'price' => $price,
@@ -118,7 +124,8 @@ trait CartInteraction
 
             return;
         }
-        $price = $cartItem->product->selling_price * ((int) $value);
+        $unitPrice = $cartItem->custom_unit_price ?: $cartItem->product->selling_price;
+        $price = $unitPrice * ((int) $value);
         $cartItem->fill([
             'qty' => $value,
             'price' => $price,
