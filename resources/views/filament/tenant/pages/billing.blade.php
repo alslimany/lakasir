@@ -8,6 +8,27 @@
     @endphp
 
     <div class="space-y-6">
+        {{-- Subscription Expired Banner --}}
+        @if($this->isSubscriptionExpired())
+            <x-filament::section>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            <svg class="h-8 w-8 text-danger-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-danger-600 dark:text-danger-400">{{ __('Subscription Expired') }}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                {{ __('Your subscription has expired. Please choose a plan below to continue using the service.') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </x-filament::section>
+        @endif
+
         {{-- Trial Banner --}}
         @if($trialInfo)
             <x-filament::section>
@@ -19,10 +40,10 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold">Trial Period Active</h3>
+                            <h3 class="text-lg font-semibold">{{ __('Trial Period Active') }}</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400">
-                                Your trial ends {{ $trialInfo['ends_at']->diffForHumans() }} 
-                                ({{ abs($trialInfo['days_left']) }} days remaining)
+                                {{ __('Your trial ends') }} {{ $trialInfo['ends_at']->diffForHumans() }} 
+                                ({{ abs($trialInfo['days_left']) }} {{ __('days remaining') }})
                             </p>
                         </div>
                     </div>
@@ -34,7 +55,7 @@
         @if($currentPlan)
             <x-filament::section>
                 <x-slot name="heading">
-                    Current Plan
+                    {{ __('Current Plan') }}
                 </x-slot>
 
                 <div class="space-y-4">
@@ -45,24 +66,24 @@
                         </div>
                         <div class="text-right">
                             <p class="text-2xl font-bold">${{ number_format($currentPlan->price, 2) }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">per {{ $currentPlan->interval }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('per') }} {{ __($currentPlan->interval) }}</p>
                         </div>
                     </div>
 
                     @if($currentPlan->features)
                         <div class="border-t dark:border-gray-700 pt-4">
-                            <h4 class="font-semibold mb-2">Plan Features</h4>
+                            <h4 class="font-semibold mb-2">{{ __('Plan Features') }}</h4>
                             <ul class="space-y-2">
                                 @foreach($currentPlan->features as $feature => $value)
                                     <li class="flex items-center text-sm">
                                         <svg class="h-5 w-5 text-success-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>
-                                        <span class="capitalize">{{ str_replace('_', ' ', $feature) }}: 
+                                        <span class="capitalize">{{ __(ucfirst(str_replace('_', ' ', $feature))) }}: 
                                             @if($value === -1)
-                                                Unlimited
+                                                {{ __('Unlimited') }}
                                             @else
-                                                {{ is_numeric($value) ? number_format($value) : $value }}
+                                                {{ is_numeric($value) ? number_format($value) : __($value) }}
                                             @endif
                                         </span>
                                     </li>
@@ -78,20 +99,20 @@
         @if($usageInfo)
             <x-filament::section>
                 <x-slot name="heading">
-                    Current Usage
+                    {{ __('Current Usage') }}
                 </x-slot>
 
                 <div class="space-y-6">
                     {{-- Products Usage --}}
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-medium">Products</span>
+                            <span class="text-sm font-medium">{{ __('Products') }}</span>
                             <span class="text-sm text-gray-600 dark:text-gray-400">
                                 {{ $usageInfo['products']['current'] }} 
                                 @if(!$usageInfo['products']['unlimited'])
                                     / {{ number_format($usageInfo['products']['limit']) }}
                                 @else
-                                    (Unlimited)
+                                    ({{ __('Unlimited') }})
                                 @endif
                             </span>
                         </div>
@@ -110,13 +131,13 @@
                     {{-- Users Usage --}}
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-medium">Users</span>
+                            <span class="text-sm font-medium">{{ __('Users') }}</span>
                             <span class="text-sm text-gray-600 dark:text-gray-400">
                                 {{ $usageInfo['users']['current'] }} 
                                 @if(!$usageInfo['users']['unlimited'])
                                     / {{ number_format($usageInfo['users']['limit']) }}
                                 @else
-                                    (Unlimited)
+                                    ({{ __('Unlimited') }})
                                 @endif
                             </span>
                         </div>
@@ -135,7 +156,7 @@
                     {{-- Storage Usage --}}
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-medium">Storage</span>
+                            <span class="text-sm font-medium">{{ __('Storage') }}</span>
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ $usageInfo['storage']['current'] }}</span>
                         </div>
                     </div>
@@ -146,7 +167,7 @@
         {{-- Available Plans --}}
         <x-filament::section>
             <x-slot name="heading">
-                Available Plans
+                {{ __('Available Plans') }}
             </x-slot>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -159,7 +180,7 @@
 
                         <div class="text-center mb-6">
                             <p class="text-3xl font-bold">${{ number_format($plan->price, 2) }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">per {{ $plan->interval }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('per') }} {{ __($plan->interval) }}</p>
                         </div>
 
                         <ul class="space-y-2 mb-6">
@@ -168,11 +189,11 @@
                                     <svg class="h-4 w-4 text-success-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                     </svg>
-                                    <span class="capitalize">{{ str_replace('_', ' ', $feature) }}: 
+                                    <span class="capitalize">{{ __(ucfirst(str_replace('_', ' ', $feature))) }}: 
                                         @if($value === -1)
-                                            Unlimited
+                                            {{ __('Unlimited') }}
                                         @else
-                                            {{ is_numeric($value) ? number_format($value) : $value }}
+                                            {{ is_numeric($value) ? number_format($value) : __($value) }}
                                         @endif
                                     </span>
                                 </li>
@@ -181,13 +202,13 @@
 
                         @if($currentPlan?->id === $plan->id)
                             <button disabled class="w-full py-2 px-4 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed">
-                                Current Plan
+                                {{ __('Current Plan') }}
                             </button>
                         @else
                             <button 
                                 wire:click="$dispatch('open-modal', { id: 'choose-plan-modal' })"
                                 class="w-full py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition">
-                                Choose Plan
+                                {{ __('Choose Plan') }}
                             </button>
                         @endif
                     </div>
