@@ -90,22 +90,13 @@ class SellingResource extends Resource
                     ->visible(can('update selling')),
                 \Filament\Tables\Actions\DeleteAction::make()
                     ->visible(can('delete selling'))
-                    ->requiresConfirmation()
-                    ->before(function (Selling $record) {
-                        // Delete all selling details first
-                        $record->sellingDetails()->delete();
-                    }),
+                    ->requiresConfirmation(),
             ])
             ->bulkActions([
                 \Filament\Tables\Actions\BulkActionGroup::make([
                     \Filament\Tables\Actions\DeleteBulkAction::make()
                         ->visible(can('delete selling'))
-                        ->requiresConfirmation()
-                        ->before(function ($records) {
-                            foreach ($records as $record) {
-                                $record->sellingDetails()->delete();
-                            }
-                        }),
+                        ->requiresConfirmation(),
                 ]),
             ])
             ->searchPlaceholder('Search (Code, User, Customer Number')
