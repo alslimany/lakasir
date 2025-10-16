@@ -95,8 +95,8 @@ class SubscriptionController extends Controller
                 'subscription_expires_at' => $expiresAt,
             ]);
 
-            // Clear session
-            session()->forget(['pending_subscription_plan_id', 'pending_subscription_amount']);
+            // Clear session - both pending and selected plan
+            session()->forget(['pending_subscription_plan_id', 'pending_subscription_amount', 'selected_plan_id']);
 
             Log::info('Subscription activated', [
                 'tenant_id' => $tenant->id,
@@ -123,8 +123,8 @@ class SubscriptionController extends Controller
      */
     public function handleCancel(Request $request)
     {
-        // Clear session
-        session()->forget(['pending_subscription_plan_id', 'pending_subscription_amount']);
+        // Clear all session data
+        session()->forget(['pending_subscription_plan_id', 'pending_subscription_amount', 'selected_plan_id']);
 
         return redirect()->route('filament.tenant.pages.billing')
             ->with('warning', 'Payment was cancelled');

@@ -135,7 +135,14 @@ class Billing extends Page
     public function getTrialInfo(): ?array
     {
         $tenant = tenancy()->tenant;
+        
+        // Don't show trial info if tenant has an active paid subscription
         if (!$tenant || !$tenant->onTrial()) {
+            return null;
+        }
+        
+        // Don't show trial if user has an active paid subscription
+        if ($tenant->subscription_plan_id && $tenant->subscription_started_at) {
             return null;
         }
 
