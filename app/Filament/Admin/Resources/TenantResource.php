@@ -160,15 +160,12 @@ class TenantResource extends Resource
                             return;
                         }
 
-                        $startsAt = $data['trial_ends_at'] ? null : now();
-                        $expiresAt = null;
-
-                        if (!$data['trial_ends_at']) {
-                            $expiresAt = match ($plan->interval) {
-                                'year' => now()->addYear(),
-                                default => now()->addMonth(),
-                            };
-                        }
+                        $onTrial = filled($data['trial_ends_at']);
+                        $startsAt = $onTrial ? null : now();
+                        $expiresAt = $onTrial ? null : match ($plan->interval) {
+                            'year' => now()->addYear(),
+                            default => now()->addMonth(),
+                        };
 
                         $record->update([
                             'subscription_plan_id' => $plan->id,
