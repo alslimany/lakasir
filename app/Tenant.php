@@ -36,6 +36,8 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     protected $casts = [
         'is_active' => 'boolean',
         'trial_ends_at' => 'datetime',
+        'subscription_started_at' => 'datetime',
+        'subscription_expires_at' => 'datetime',
     ];
 
     /**
@@ -67,7 +69,28 @@ class Tenant extends BaseTenant implements TenantWithDatabase
      */
     public function hasActiveSubscription(): bool
     {
-        return $this->is_active && ($this->onTrial() || $this->subscribed('default'));
+        // Check if on trial first
+        if ($this->onTrial()) {
+            return true;
+        }
+
+        // Check if subscription is active and not expired
+        if (!$this->is_active) {
+            return false;
+        }
+
+        // If using Cashier (Stripe)
+        if ($this->subscribed('default')) {
+            return true;
+        }
+
+        // If using subscription_expires_at (Moamalat or other)
+        if ($this->subscription_expires_at) {
+            return $this->subscription_expires_at->isFuture();
+        }
+
+        // If has a subscription plan but no expiry date, consider it active
+        return $this->subscription_plan_id !== null;
     }
 
     /**

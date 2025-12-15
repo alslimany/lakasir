@@ -14,6 +14,13 @@ class Billing extends Page
 
     protected static string $view = 'filament.tenant.pages.billing';
 
+    protected static ?string $navigationLabel = 'Billing';
+
+    public static function getLabel(): string
+    {
+        return __('Billing');
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return __('Settings');
@@ -40,12 +47,12 @@ class Billing extends Page
                     ->form([
                         Select::make('plan')
                             ->label(__('Select Plan'))
-                            ->options(SubscriptionPlan::active()->pluck('name', 'id'))
+                            ->options(SubscriptionPlan::on('mysql')->active()->pluck('name', 'id'))
                             ->required()
                             ->reactive(),
                     ])
                     ->action(function (array $data) {
-                        $plan = SubscriptionPlan::find($data['plan']);
+                        $plan = SubscriptionPlan::on('mysql')->find($data['plan']);
                         if (!$plan) {
                             Notification::make()
                                 ->title(__('Plan not found'))
@@ -54,24 +61,54 @@ class Billing extends Page
                             return;
                         }
 
-                        // In production, this would redirect to Stripe Checkout
+                        // Store plan in session and redirect to payment page
+                        session(['selected_plan_id' => $plan->id]);
+                        
                         Notification::make()
                             ->title(__('Redirecting to payment...'))
-                            ->body(__('You will be redirected to Stripe to complete your subscription.'))
+                            ->body(__('You will be redirected to complete your payment.'))
                             ->success()
                             ->send();
-
-                        // TODO: Implement Stripe Checkout redirect
+                        
+                        // Redirect to the payment page where Moamalat will be initialized
+                        $this->redirect(route('filament.tenant.pages.billing'));
                     }),
             ];
         }
 
         return [
             Action::make('manageBilling')
-                ->label(__('Manage Billing'))
+                ->label(__('Manage Subscription'))
                 ->icon('heroicon-o-credit-card')
                 ->color('primary')
-                ->url(fn () => route('filament.tenant.billing.portal')),
+                ->form([
+                    Select::make('plan')
+                        ->label(__('Select New Plan'))
+                        ->options(SubscriptionPlan::on('mysql')->active()->pluck('name', 'id'))
+                        ->required()
+                        ->reactive(),
+                ])
+                ->action(function (array $data) {
+                    $plan = SubscriptionPlan::on('mysql')->find($data['plan']);
+                    if (!$plan) {
+                        Notification::make()
+                            ->title(__('Plan not found'))
+                            ->danger()
+                            ->send();
+                        return;
+                    }
+
+                    // Store plan in session and redirect to payment page
+                    session(['selected_plan_id' => $plan->id]);
+                    
+                    Notification::make()
+                        ->title(__('Redirecting to payment...'))
+                        ->body(__('You will be redirected to complete your payment.'))
+                        ->success()
+                        ->send();
+                    
+                    $this->redirect(route('filament.tenant.pages.billing'));
+                }),
         ];
     }
 
@@ -81,10 +118,31 @@ class Billing extends Page
         return $tenant?->subscriptionPlan;
     }
 
+    public function getSubscriptionInfo(): ?array
+    {
+        $tenant = tenancy()->tenant;
+        if (!$tenant || !$tenant->subscriptionPlan) {
+            return null;
+        }
+
+        return [
+            'started_at' => $tenant->subscription_started_at,
+            'expires_at' => $tenant->subscription_expires_at,
+            'is_expired' => $tenant->subscription_expires_at && $tenant->subscription_expires_at->isPast(),
+        ];
+    }
+
     public function getTrialInfo(): ?array
     {
         $tenant = tenancy()->tenant;
+        
+        // Don't show trial info if tenant has an active paid subscription
         if (!$tenant || !$tenant->onTrial()) {
+            return null;
+        }
+        
+        // Don't show trial if user has an active paid subscription
+        if ($tenant->subscription_plan_id && $tenant->subscription_started_at) {
             return null;
         }
 
@@ -124,12 +182,27 @@ class Billing extends Page
 
     public function getAvailablePlans()
     {
-        return SubscriptionPlan::active()->orderBy('sort_order')->get();
+        return SubscriptionPlan::on('mysql')->active()->orderBy('sort_order')->get();
     }
 
     public function isSubscriptionExpired(): bool
     {
         $tenant = tenancy()->tenant;
         return $tenant && !$tenant->hasActiveSubscription() && !$tenant->onTrial();
+    }
+
+    public function getSelectedPlan(): ?SubscriptionPlan
+    {
+        $planId = session('selected_plan_id');
+        if ($planId) {
+            return SubscriptionPlan::on('mysql')->find($planId);
+        }
+        return null;
+    }
+
+    public function clearSelectedPlan()
+    {
+        session()->forget('selected_plan_id');
+        $this->redirect(route('filament.tenant.pages.billing'));
     }
 }
