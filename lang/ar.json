@@ -419,6 +419,12 @@
     "Fashion": "أزياء",
     "Pharmacy": "صيدلية",
     "Other": "أخرى",
+    "Other Business Type": "نوع نشاط آخر",
     "Shop Domain": "نطاق المتجر",
-    "Settings": "الإعدادات"
+    "Domain": "النطاق",
+    "Settings": "الإعدادات",
+    "Owner": "المالك",
+    "Apply Plan": "تطبيق الخطة",
+    "Trial Ends At": "ينتهي موعد التجربة في",
+    "Leave empty to start immediately": "اتركه فارغًا للبدء فورًا"
 }

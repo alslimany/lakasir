@@ -17,7 +17,7 @@ class TenantPolicy
      */
     public function view(): bool
     {
-        return false;
+        return true;
     }
 
     /**

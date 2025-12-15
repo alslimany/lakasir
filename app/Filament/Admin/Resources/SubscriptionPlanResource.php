@@ -52,6 +52,10 @@ class SubscriptionPlanResource extends Resource
                         Forms\Components\Toggle::make('is_active')
                             ->default(true)
                             ->required(),
+                        Forms\Components\Toggle::make('ads_enabled')
+                            ->label('Ads Enabled')
+                            ->helperText('Show ads for tenants on this plan')
+                            ->default(false),
                         Forms\Components\TextInput::make('sort_order')
                             ->numeric()
                             ->default(0),
@@ -87,6 +91,10 @@ class SubscriptionPlanResource extends Resource
                         'year' => 'success',
                         default => 'gray',
                     }),
+                Tables\Columns\IconColumn::make('ads_enabled')
+                    ->label('Ads')
+                    ->boolean()
+                    ->sortable(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
                     ->sortable(),

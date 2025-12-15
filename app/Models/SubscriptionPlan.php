@@ -27,6 +27,7 @@ class SubscriptionPlan extends Model
         'features',
         'description',
         'is_active',
+        'ads_enabled',
         'sort_order',
     ];
 
@@ -34,6 +35,7 @@ class SubscriptionPlan extends Model
         'features' => 'array',
         'price' => 'decimal:2',
         'is_active' => 'boolean',
+        'ads_enabled' => 'boolean',
     ];
 
     /**

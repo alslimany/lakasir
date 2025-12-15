@@ -2,11 +2,14 @@
 
 namespace App\Filament\Admin\Resources\TenantResource\Pages;
 
+use App\Constants\TenantDefaults;
 use App\Filament\Admin\Resources\TenantResource;
+use App\Models\Tenants\Setting;
 use App\Services\SubscriptionService;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Support\Facades\Log;
 
 class ViewTenant extends ViewRecord
 {
@@ -108,6 +111,29 @@ class ViewTenant extends ViewRecord
                                 '--force' => true,
                                 '--path' => 'database/migrations/tenant',
                             ]);
+
+                            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                                '--class' => 'PermissionSeeder',
+                                '--force' => true,
+                            ]);
+                            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                                '--class' => 'PaymentMethodSeeder',
+                                '--force' => true,
+                            ]);
+                            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                                '--class' => 'CategorySeeder',
+                                '--force' => true,
+                            ]);
+
+                            try {
+                                Setting::set('language', TenantDefaults::LANGUAGE);
+                                Setting::set('currency', TenantDefaults::CURRENCY);
+                            } catch (\Throwable $e) {
+                                Log::warning('Failed to set tenant defaults after reset', [
+                                    'tenant_id' => $tenant->id ?? null,
+                                    'error' => $e->getMessage(),
+                                ]);
+                            }
                         });
 
                         // Also remove central tenant users and reset central usage

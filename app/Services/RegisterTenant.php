@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Constants\Role;
+use App\Constants\TenantDefaults;
 use App\Models\Tenants\About;
+use App\Models\Tenants\Profile;
+use App\Models\Tenants\Setting;
 use App\Models\Tenants\User;
 use App\Notifications\DomainCreated;
 use App\Tenant;
@@ -36,10 +39,26 @@ class RegisterTenant
         ]);
 
         $tenant->run(function () use ($data) {
+            $ownerName = $data['full_name'] ?? null;
+
+            if (blank($ownerName)) {
+                $ownerName = $data['shop_name'] ?? null;
+            }
+
+            if (blank($ownerName)) {
+                $ownerName = $data['email'] ?? null;
+            }
+
+            $ownerName ??= __('Owner');
             $user = User::create([
+                'name' => $ownerName,
                 'email' => $data['email'],
                 'password' => bcrypt($data['password']),
                 'is_owner' => true,
+            ]);
+
+            $user->profile()->create([
+                'locale' => TenantDefaults::LANGUAGE,
             ]);
 
             About::create([
@@ -59,6 +78,8 @@ class RegisterTenant
             Artisan::call('db:seed', [
                 '--class' => 'CategorySeeder',
             ]);
+            Setting::set('language', TenantDefaults::LANGUAGE);
+            Setting::set('currency', TenantDefaults::CURRENCY);
             $user->assignRole(Role::admin);
         });
 
