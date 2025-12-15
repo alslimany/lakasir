@@ -39,7 +39,7 @@ class RegisterTenant
         ]);
 
         $tenant->run(function () use ($data) {
-            $ownerName = $data['full_name'] ?? ($data['shop_name'] ?? ($data['email'] ?? 'Owner'));
+            $ownerName = $data['full_name'] ?? ($data['shop_name'] ?? ($data['email'] ?? __('Owner')));
             $user = User::create([
                 'name' => $ownerName,
                 'email' => $data['email'],

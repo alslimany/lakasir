@@ -354,5 +354,6 @@
     "Profile": "Profile",
     "Language": "Language",
     "Other Business Type": "Other Business Type",
-    "Domain": "Domain"
+    "Domain": "Domain",
+    "Owner": "Owner"
 }
