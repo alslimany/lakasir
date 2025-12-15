@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Constants\TenantDefaults;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -25,7 +26,9 @@ return new class extends Migration
         });
 
         // Insert default currencies
-        $currentCurrency = DB::table('settings')->where('key', 'currency')->value('value') ?? 'LYD';
+        $currentCurrency = Schema::hasTable('settings')
+            ? DB::table('settings')->where('key', 'currency')->value('value') ?? TenantDefaults::CURRENCY
+            : TenantDefaults::CURRENCY;
         
         $currencies = [
             [

@@ -24,7 +24,15 @@ class StatsOverview extends BaseWidget
             ->whereHas('subscriptionPlan', fn ($query) => $query->where('price', '>', 0))
             ->with('subscriptionPlan')
             ->get()
-            ->sum(fn ($tenant) => $tenant->subscriptionPlan?->price ?? 0);
+            ->sum(function ($tenant) {
+                $plan = $tenant->subscriptionPlan;
+                if (!$plan) {
+                    return 0;
+                }
+
+                $price = $plan->price ?? 0;
+                return $plan->interval === 'year' ? $price / 12 : $price;
+            });
         
         return [
             Stat::make('Total Tenants', $totalTenants)

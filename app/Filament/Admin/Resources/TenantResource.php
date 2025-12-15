@@ -8,6 +8,7 @@ use App\Models\SubscriptionPlan;
 use App\Tenant;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -152,6 +153,10 @@ class TenantResource extends Resource
                     ->action(function (Tenant $record, array $data) {
                         $plan = SubscriptionPlan::find($data['subscription_plan_id']);
                         if (!$plan) {
+                            Notification::make()
+                                ->title('Subscription plan not found')
+                                ->danger()
+                                ->send();
                             return;
                         }
 
