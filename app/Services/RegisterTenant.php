@@ -39,7 +39,7 @@ class RegisterTenant
 
         $tenant->run(function () use ($data) {
             $user = User::create([
-                'name' => $data['full_name'] ?? $data['email'],
+                'name' => $data['full_name'] ?? ($data['shop_name'] ?? ($data['email'] ?? 'Owner')),
                 'email' => $data['email'],
                 'password' => bcrypt($data['password']),
                 'is_owner' => true,

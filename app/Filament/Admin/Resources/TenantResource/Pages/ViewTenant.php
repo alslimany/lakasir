@@ -7,6 +7,7 @@ use App\Services\SubscriptionService;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Support\Facades\Log;
 
 class ViewTenant extends ViewRecord
 {
@@ -126,7 +127,10 @@ class ViewTenant extends ViewRecord
                                 \App\Models\Tenants\Setting::set('language', 'ar');
                                 \App\Models\Tenants\Setting::set('currency', 'LYD');
                             } catch (\Throwable $e) {
-                                // ignore
+                                Log::warning('Failed to set tenant defaults after reset', [
+                                    'tenant_id' => $tenant->id ?? null,
+                                    'error' => $e->getMessage(),
+                                ]);
                             }
                         });
 

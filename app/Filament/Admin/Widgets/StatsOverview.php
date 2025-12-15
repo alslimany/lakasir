@@ -52,7 +52,7 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-o-megaphone')
                 ->color('gray'),
 
-            Stat::make('Subscription Revenue', '$' . number_format($subscriptionRevenue, 2))
+            Stat::make('Subscription Revenue', number_format($subscriptionRevenue, 2) . ' ' . strtoupper(config('cashier.currency', 'USD')))
                 ->description('Monthly recurring from paid plans')
                 ->descriptionIcon('heroicon-o-chart-bar')
                 ->color('primary'),
