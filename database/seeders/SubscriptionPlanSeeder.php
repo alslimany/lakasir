@@ -14,6 +14,22 @@ class SubscriptionPlanSeeder extends Seeder
     {
         $plans = [
             [
+                'name' => 'Free (Ads)',
+                'slug' => 'free-ads',
+                'price' => 0,
+                'interval' => 'month',
+                'description' => 'Free plan supported by ads',
+                'features' => [
+                    'products' => 50,
+                    'users' => 1,
+                    'storage' => 536870912, // 512MB in bytes
+                    'ads' => true,
+                ],
+                'is_active' => true,
+                'ads_enabled' => true,
+                'sort_order' => 0,
+            ],
+            [
                 'name' => 'Basic',
                 'slug' => 'basic',
                 'price' => 29.00,

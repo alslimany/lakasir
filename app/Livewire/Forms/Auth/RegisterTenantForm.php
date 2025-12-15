@@ -73,7 +73,7 @@ class RegisterTenantForm extends Component implements HasForms
                                 ->live()
                                 ->required(),
                             TextInput::make('other_business_type')
-                                ->label('Lainnya')
+                                ->label(__('Other Business Type'))
                                 ->visible(fn (Get $get): bool => $get('business_type') == 'other')
                                 ->required(fn (Get $get): bool => $get('business_type') == 'other')
                                 ->string(),
@@ -82,7 +82,7 @@ class RegisterTenantForm extends Component implements HasForms
                     Wizard\Step::make(__('Shop Domain'))
                         ->schema([
                             TextInput::make('domain')
-                                ->label('Domain')
+                                ->label(__('Domain'))
                                 ->rules(['unique:tenants,id', new Domain])
                                 ->suffix('.'.config('tenancy.central_domains')[0]),
                         ])
@@ -110,7 +110,7 @@ class RegisterTenantForm extends Component implements HasForms
                                         size="sm"
                                         wire:click="create"
                                     >
-                                        Submit
+                                        {{ __('Submit') }}
                                     </x-filament::button>
                                   BLADE))),
             ])

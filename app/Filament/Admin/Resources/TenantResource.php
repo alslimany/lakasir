@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\TenantResource\Pages;
+use App\Filament\Admin\Resources\TenantResource\RelationManagers\TenantUsersRelationManager;
 use App\Models\SubscriptionPlan;
 use App\Tenant;
 use Filament\Forms;
@@ -133,6 +134,45 @@ class TenantResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('applyPlan')
+                    ->label('Apply Plan')
+                    ->icon('heroicon-o-currency-dollar')
+                    ->form([
+                        Forms\Components\Select::make('subscription_plan_id')
+                            ->label('Subscription Plan')
+                            ->options(fn () => SubscriptionPlan::active()->pluck('name', 'id'))
+                            ->searchable()
+                            ->required(),
+                        Forms\Components\DatePicker::make('trial_ends_at')
+                            ->label('Trial Ends At')
+                            ->helperText('Leave empty to start immediately')
+                            ->native(false),
+                    ])
+                    ->action(function (Tenant $record, array $data) {
+                        $plan = SubscriptionPlan::find($data['subscription_plan_id']);
+                        if (!$plan) {
+                            return;
+                        }
+
+                        $startsAt = $data['trial_ends_at'] ? null : now();
+                        $expiresAt = null;
+
+                        if (!$data['trial_ends_at']) {
+                            $expiresAt = match ($plan->interval) {
+                                'year' => now()->addYear(),
+                                default => now()->addMonth(),
+                            };
+                        }
+
+                        $record->update([
+                            'subscription_plan_id' => $plan->id,
+                            'is_active' => true,
+                            'trial_ends_at' => $data['trial_ends_at'] ?? null,
+                            'subscription_started_at' => $startsAt,
+                            'subscription_expires_at' => $expiresAt,
+                        ]);
+                    }),
                 Tables\Actions\Action::make('suspend')
                     ->icon('heroicon-o-no-symbol')
                     ->color('danger')
@@ -156,7 +196,7 @@ class TenantResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            TenantUsersRelationManager::class,
         ];
     }
 
@@ -166,6 +206,7 @@ class TenantResource extends Resource
             'index' => Pages\ListTenants::route('/'),
             'create' => Pages\CreateTenant::route('/create'),
             'edit' => Pages\EditTenant::route('/{record}/edit'),
+            'view' => Pages\ViewTenant::route('/{record}'),
         ];
     }
 }

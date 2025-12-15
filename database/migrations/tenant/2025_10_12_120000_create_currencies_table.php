@@ -25,17 +25,17 @@ return new class extends Migration
         });
 
         // Insert default currencies
-        $currentCurrency = DB::table('settings')->where('key', 'currency')->value('value') ?? 'IDR';
+        $currentCurrency = DB::table('settings')->where('key', 'currency')->value('value') ?? 'LYD';
         
         $currencies = [
             [
-                'code' => 'IDR',
-                'name' => 'Indonesian Rupiah',
-                'symbol' => 'Rp',
+                'code' => 'LYD',
+                'name' => 'Libyan Dinar',
+                'symbol' => 'LYD',
                 'symbol_position' => 'before',
-                'decimal_places' => 0,
+                'decimal_places' => 3,
                 'is_active' => true,
-                'is_default' => $currentCurrency === 'IDR',
+                'is_default' => $currentCurrency === 'LYD',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -50,62 +50,11 @@ return new class extends Migration
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            [
-                'code' => 'MXN',
-                'name' => 'Mexican Peso',
-                'symbol' => '$',
-                'symbol_position' => 'before',
-                'decimal_places' => 2,
-                'is_active' => true,
-                'is_default' => $currentCurrency === 'MXN',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'code' => 'EUR',
-                'name' => 'Euro',
-                'symbol' => '€',
-                'symbol_position' => 'before',
-                'decimal_places' => 2,
-                'is_active' => true,
-                'is_default' => $currentCurrency === 'EUR',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'code' => 'GBP',
-                'name' => 'British Pound',
-                'symbol' => '£',
-                'symbol_position' => 'before',
-                'decimal_places' => 2,
-                'is_active' => true,
-                'is_default' => $currentCurrency === 'GBP',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'code' => 'SAR',
-                'name' => 'Saudi Riyal',
-                'symbol' => 'ر.س',
-                'symbol_position' => 'before',
-                'decimal_places' => 2,
-                'is_active' => true,
-                'is_default' => $currentCurrency === 'SAR',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'code' => 'AED',
-                'name' => 'UAE Dirham',
-                'symbol' => 'د.إ',
-                'symbol_position' => 'before',
-                'decimal_places' => 2,
-                'is_active' => true,
-                'is_default' => $currentCurrency === 'AED',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
         ];
+
+        if (collect($currencies)->where('is_default', true)->isEmpty()) {
+            $currencies[0]['is_default'] = true;
+        }
 
         DB::table('currencies')->insert($currencies);
     }

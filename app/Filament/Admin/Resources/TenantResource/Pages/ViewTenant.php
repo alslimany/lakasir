@@ -108,6 +108,26 @@ class ViewTenant extends ViewRecord
                                 '--force' => true,
                                 '--path' => 'database/migrations/tenant',
                             ]);
+
+                            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                                '--class' => 'PermissionSeeder',
+                                '--force' => true,
+                            ]);
+                            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                                '--class' => 'PaymentMethodSeeder',
+                                '--force' => true,
+                            ]);
+                            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                                '--class' => 'CategorySeeder',
+                                '--force' => true,
+                            ]);
+
+                            try {
+                                \App\Models\Tenants\Setting::set('language', 'ar');
+                                \App\Models\Tenants\Setting::set('currency', 'LYD');
+                            } catch (\Throwable $e) {
+                                // ignore
+                            }
                         });
 
                         // Also remove central tenant users and reset central usage

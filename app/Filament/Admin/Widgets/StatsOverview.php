@@ -15,6 +15,16 @@ class StatsOverview extends BaseWidget
         $onTrial = Tenant::whereNotNull('trial_ends_at')
             ->where('trial_ends_at', '>', now())
             ->count();
+        $paidTenants = Tenant::where('is_active', true)
+            ->whereHas('subscriptionPlan', fn ($query) => $query->where('price', '>', 0))
+            ->count();
+        $freeTenants = Tenant::whereHas('subscriptionPlan', fn ($query) => $query->where('price', '=', 0))
+            ->count();
+        $subscriptionRevenue = Tenant::where('is_active', true)
+            ->whereHas('subscriptionPlan', fn ($query) => $query->where('price', '>', 0))
+            ->with('subscriptionPlan')
+            ->get()
+            ->sum(fn ($tenant) => $tenant->subscriptionPlan?->price ?? 0);
         
         return [
             Stat::make('Total Tenants', $totalTenants)
@@ -31,6 +41,21 @@ class StatsOverview extends BaseWidget
                 ->description('Trial period active')
                 ->descriptionIcon('heroicon-o-clock')
                 ->color('warning'),
+            
+            Stat::make('Paid Subscriptions', $paidTenants)
+                ->description('Active paid tenants')
+                ->descriptionIcon('heroicon-o-currency-dollar')
+                ->color('success'),
+
+            Stat::make('Free Subscriptions', $freeTenants)
+                ->description('Tenants on the ad-supported plan')
+                ->descriptionIcon('heroicon-o-megaphone')
+                ->color('gray'),
+
+            Stat::make('Subscription Revenue', '$' . number_format($subscriptionRevenue, 2))
+                ->description('Monthly recurring from paid plans')
+                ->descriptionIcon('heroicon-o-chart-bar')
+                ->color('primary'),
         ];
     }
 }

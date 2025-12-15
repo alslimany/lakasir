@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Constants\Role;
 use App\Models\Tenants\About;
+use App\Models\Tenants\Profile;
+use App\Models\Tenants\Setting;
 use App\Models\Tenants\User;
 use App\Notifications\DomainCreated;
 use App\Tenant;
@@ -37,9 +39,14 @@ class RegisterTenant
 
         $tenant->run(function () use ($data) {
             $user = User::create([
+                'name' => $data['full_name'] ?? $data['email'],
                 'email' => $data['email'],
                 'password' => bcrypt($data['password']),
                 'is_owner' => true,
+            ]);
+
+            $user->profile()->create([
+                'locale' => 'ar',
             ]);
 
             About::create([
@@ -59,6 +66,8 @@ class RegisterTenant
             Artisan::call('db:seed', [
                 '--class' => 'CategorySeeder',
             ]);
+            Setting::set('language', 'ar');
+            Setting::set('currency', 'LYD');
             $user->assignRole(Role::admin);
         });
 
