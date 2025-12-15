@@ -355,5 +355,8 @@
     "Language": "Language",
     "Other Business Type": "Other Business Type",
     "Domain": "Domain",
-    "Owner": "Owner"
+    "Owner": "Owner",
+    "Apply Plan": "Apply Plan",
+    "Trial Ends At": "Trial Ends At",
+    "Leave empty to start immediately": "Leave empty to start immediately"
 }

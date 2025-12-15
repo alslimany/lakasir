@@ -137,17 +137,17 @@ class TenantResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('applyPlan')
-                    ->label('Apply Plan')
+                    ->label(__('Apply Plan'))
                     ->icon('heroicon-o-currency-dollar')
                     ->form([
                         Forms\Components\Select::make('subscription_plan_id')
-                            ->label('Subscription Plan')
+                            ->label(__('Subscription Plan'))
                             ->options(fn () => SubscriptionPlan::active()->pluck('name', 'id'))
                             ->searchable()
                             ->required(),
                         Forms\Components\DatePicker::make('trial_ends_at')
-                            ->label('Trial Ends At')
-                            ->helperText('Leave empty to start immediately')
+                            ->label(__('Trial Ends At'))
+                            ->helperText(__('Leave empty to start immediately'))
                             ->native(false),
                     ])
                     ->action(function (Tenant $record, array $data) {
