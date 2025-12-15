@@ -160,9 +160,9 @@ class TenantResource extends Resource
                             return;
                         }
 
-                        $onTrial = filled($data['trial_ends_at']);
-                        $startsAt = $onTrial ? null : now();
-                        $expiresAt = $onTrial ? null : match ($plan->interval) {
+                        $hasTrialEndDate = filled($data['trial_ends_at']);
+                        $startsAt = $hasTrialEndDate ? null : now();
+                        $expiresAt = $hasTrialEndDate ? null : match ($plan->interval) {
                             'year' => now()->addYear(),
                             default => now()->addMonth(),
                         };

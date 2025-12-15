@@ -2,7 +2,6 @@
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Constants\TenantDefaults;
 use App\Tenant;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -62,7 +61,7 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-o-megaphone')
                 ->color('gray'),
 
-            Stat::make('Subscription Revenue', Number::currency($subscriptionRevenue, config('cashier.currency', TenantDefaults::CURRENCY)))
+            Stat::make('Subscription Revenue', Number::currency($subscriptionRevenue, config('cashier.currency', 'USD')))
                 ->description('Monthly recurring from paid plans')
                 ->descriptionIcon('heroicon-o-chart-bar')
                 ->color('primary'),

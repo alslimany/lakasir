@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\TenantResource\Pages;
 
 use App\Constants\TenantDefaults;
 use App\Filament\Admin\Resources\TenantResource;
+use App\Models\Tenants\Setting;
 use App\Services\SubscriptionService;
 use Filament\Actions;
 use Filament\Notifications\Notification;
@@ -125,8 +126,8 @@ class ViewTenant extends ViewRecord
                             ]);
 
                             try {
-                                \App\Models\Tenants\Setting::set('language', TenantDefaults::LANGUAGE);
-                                \App\Models\Tenants\Setting::set('currency', TenantDefaults::CURRENCY);
+                                Setting::set('language', TenantDefaults::LANGUAGE);
+                                Setting::set('currency', TenantDefaults::CURRENCY);
                             } catch (\Throwable $e) {
                                 Log::warning('Failed to set tenant defaults after reset', [
                                     'tenant_id' => $tenant->id ?? null,

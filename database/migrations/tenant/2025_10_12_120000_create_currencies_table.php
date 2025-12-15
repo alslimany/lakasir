@@ -55,20 +55,6 @@ return new class extends Migration
             ],
         ];
 
-        if (collect($currencies)->where('is_default', true)->isEmpty()) {
-            $defaultApplied = false;
-
-            foreach ($currencies as &$currency) {
-                $currency['is_default'] = $currency['code'] === TenantDefaults::CURRENCY;
-                $defaultApplied = $defaultApplied || $currency['is_default'];
-            }
-            unset($currency);
-
-            if (!$defaultApplied && count($currencies) > 0) {
-                $currencies[0]['is_default'] = true;
-            }
-        }
-
         DB::table('currencies')->insert($currencies);
     }
 
